@@ -14,7 +14,7 @@ Die Anwendung läuft als einzelne HTML-Datei direkt im Browser und unterstützt 
 - Kategorien umbenennen oder ausblenden
 - Programmliste mit Suchfunktion
 - Audio- und Untertitel-Auswahl, sofern vom Stream angeboten
-- Lokale Speicherung von Playlists, Favoriten und Einstellungen
+- Lokale Speicherung von Playlists, Favoriten und Einstellungen (Backup Export/Import)
 - Optionaler lokaler Proxy für Server mit CORS-Sperre
 - Keine externen CDNs, Fonts oder Tracking-Dienste
 
@@ -43,10 +43,10 @@ Gespeichert werden unter anderem:
 ## EPG und CORS
 
 Manche EPG- oder Playlist-Server blockieren direkte Browser-Anfragen durch CORS-Regeln.
-Drei Eingebaute optionen:
+Drei eingebaute Optionen.
 1. URL funktioniert direkt und es gibt kein CORS probleme.
 2. URL funktioniert nicht, und ein Umweg über ein CORS-Public-Proxy wird genutzt, aber nur wenn der lokale python Proxy nicht läuft.
-3. Lokaler (python) Proxy verwendet: Dieser läuft nur auf: `127.0.0.1:8787`. Hat vorrang gegenüber Punkt 2 mit dem Öffentlichen Proxy. 
+3. Lokaler (python) Proxy läuft nur auf: `127.0.0.1:8787`. Hat vorrang gegenüber Punkt 2 mit dem Öffentlichen Proxy. 
 > Der Python Proxy kann über das Einstellungs-Zahnrad oben rechts gefunden und als python-code abgespeichert werden.
 
 
