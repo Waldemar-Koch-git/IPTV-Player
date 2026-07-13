@@ -3,6 +3,8 @@
 SIGNAL ist ein lokaler IPTV-Player für M3U- und HLS-Playlists.  
 Die Anwendung läuft als einzelne HTML-Datei direkt im Browser und unterstützt EPG-Daten im XMLTV-Format.
 
+![Preview](./images_/preview.jpg)
+
 ## Funktionen
 
 - Wiedergabe von M3U- und M3U8/HLS-Playlists
