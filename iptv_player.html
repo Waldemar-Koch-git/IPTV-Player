@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="de">
+
 <head>
 <meta charset="UTF-8">
 <title>SIGNAL - IPTV Player</title>
 <!--
-  Datenschutz-Hinweis: Diese Seite lädt bewusst KEINE externen Ressourcen
-  (keine Fonts, keine Skript-CDNs). hls.js und pako sind unten direkt
-  eingebettet. Es werden ausschließlich die vom Nutzer selbst eingetragenen
-  Playlist-/EPG-/Stream-URLs kontaktiert - sonst nichts.
+  Privacy notice: this page deliberately loads NO external resources
+  (no fonts, no script CDNs). hls.js and pako are embedded directly
+  below. The only URLs ever contacted are the playlist/EPG/stream
+  URLs the user enters themselves - nothing else.
 -->
 <style>
   :root{
@@ -672,73 +672,74 @@
 <body>
 
 <header>
-  <button class="icon-btn" id="sidebarToggleBtn" title="Senderliste ein-/ausblenden" aria-label="Senderliste ein-/ausblenden">☰</button>
+  <button class="icon-btn" id="sidebarToggleBtn" data-i18n-title="sidebarToggleTitle" data-i18n-aria-label="sidebarToggleTitle" title="Senderliste ein-/ausblenden" aria-label="Senderliste ein-/ausblenden">☰</button>
   <div class="logo-dial"></div>
   <div>
     <h1>Signal</h1>
-    <div class="sub">IPTV Wiedergabe für M3U / HLS Playlists</div>
+    <div class="sub" data-i18n="appSub">IPTV Wiedergabe für M3U / HLS Playlists</div>
   </div>
   <div class="spacer"></div>
-  <span id="proxyAutoBadge" class="pm-epg-badge" style="display:none; margin-right:4px;" title="Lokaler Proxy erkannt und aktiv">PROXY ●</span>
-  <button class="icon-btn" id="epgGuideBtn" title="Programmvorschau (EPG)" aria-label="Programmvorschau">▤</button>
-  <button class="gear-btn" id="settingsBtn" title="Einstellungen" aria-label="Einstellungen">⚙</button>
+  <span id="proxyAutoBadge" class="pm-epg-badge" style="display:none; margin-right:4px;" data-i18n-title="proxyAutoBadgeTitle" title="Lokaler Proxy erkannt und aktiv">PROXY ●</span>
+  <select id="langSelect" data-i18n-title="langToggleTitle" data-i18n-aria-label="langToggleTitle" title="Switch language" aria-label="Switch language" style="font-family:var(--font-mono); font-weight:700; font-size:11px; padding:6px 8px; margin-right:4px;"></select>
+  <button class="icon-btn" id="epgGuideBtn" data-i18n-title="epgGuideBtnTitle" data-i18n-aria-label="epgGuideBtnTitle" title="Programmvorschau (EPG)" aria-label="Programmvorschau">▤</button>
+  <button class="gear-btn" id="settingsBtn" data-i18n-title="settingsBtnTitle" data-i18n-aria-label="settingsBtnTitle" title="Einstellungen" aria-label="Einstellungen">⚙</button>
 </header>
 
 <div class="layout" id="mainLayout">
   <aside>
-    <!-- Playlist-/„Konto"-Verwaltung -->
+    <!-- Playlist/"account" management -->
     <div class="playlist-manager">
       <div class="pm-header" id="pmHeader">
-        <button class="pm-header-toggle" id="pmToggleBtn" aria-expanded="true" title="Playlisten ein-/ausklappen">
+        <button class="pm-header-toggle" id="pmToggleBtn" aria-expanded="true" data-i18n-title="pmToggleTitle" title="Playlisten ein-/ausklappen">
           <span class="pm-toggle-icon">▾</span>
-          <span class="label">Playlists</span>
+          <span class="label" data-i18n="playlistsLabel">Playlists</span>
         </button>
-        <button class="btn-ghost" id="addPlaylistBtn">+ Neu</button>
+        <button class="btn-ghost" id="addPlaylistBtn" data-i18n="addNew">+ Neu</button>
       </div>
       <div class="pm-list" id="pmList">
-        <div class="pm-empty">Noch keine Playlist gespeichert.</div>
+        <div class="pm-empty" data-i18n="pmEmpty">Noch keine Playlist gespeichert.</div>
       </div>
 
       <div class="source-form hidden" id="sourceForm">
-        <div class="label">Neue Playlist hinzufügen</div>
-        <input type="text" id="playlistName" placeholder="Name (z. B. „Mein Anbieter“)">
+        <div class="label" data-i18n="newPlaylistHeading">Neue Playlist hinzufügen</div>
+        <input type="text" id="playlistName" data-i18n-placeholder="namePlaceholder" placeholder="Name (z. B. „Mein Anbieter“)">
 
-        <div class="label" style="margin-top:2px;">Playlist-URL</div>
+        <div class="label" style="margin-top:2px;" data-i18n="playlistUrlLabel">Playlist-URL</div>
         <div class="url-row">
-          <input type="text" id="playlistUrl" placeholder="https://beispiel.de/playlist.m3u8" autocomplete="off">
-          <button class="btn-primary btn-sm" id="loadUrlBtn">Laden</button>
+          <input type="text" id="playlistUrl" data-i18n-placeholder="playlistUrlPlaceholder" placeholder="https://beispiel.de/playlist.m3u8" autocomplete="off">
+          <button class="btn-primary btn-sm" id="loadUrlBtn" data-i18n="load">Laden</button>
         </div>
 
-        <div class="label">Oder Datei hochladen</div>
+        <div class="label" data-i18n="orUploadFile">Oder Datei hochladen</div>
         <label class="file-drop" id="dropZone">
-          <span id="dropLabel">.m3u / .m3u8-Datei auswählen oder ablegen</span>
+          <span id="dropLabel" data-i18n="m3uDropLabel">.m3u / .m3u8-Datei auswählen oder ablegen</span>
           <input type="file" id="fileInput" accept=".m3u,.m3u8,text/plain">
         </label>
 
         <div class="status-msg" id="statusMsg"></div>
-        <button class="btn-ghost" id="cancelAddBtn" style="align-self:flex-start;">Abbrechen</button>
+        <button class="btn-ghost" id="cancelAddBtn" style="align-self:flex-start;" data-i18n="cancel">Abbrechen</button>
       </div>
     </div>
 
-    <!-- Tab-Leiste -->
+    <!-- Tab bar -->
     <div class="tabs" id="tabs">
-      <button class="tab-btn active" data-tab="all">Alle Sender</button>
-      <button class="tab-btn" data-tab="fav">★ Favoriten</button>
+      <button class="tab-btn active" data-tab="all" data-i18n="tabAll">Alle Sender</button>
+      <button class="tab-btn" data-tab="fav" data-i18n="tabFav">★ Favoriten</button>
     </div>
 
     <div class="list-controls">
       <div class="filter-row">
         <select id="groupFilter">
-          <option value="">Alle Kategorien</option>
+          <option value="" data-i18n="allCategories">Alle Kategorien</option>
         </select>
-        <button class="btn-ghost" id="manageGroupsBtn" title="Kategorien verwalten">Kategorien</button>
+        <button class="btn-ghost" id="manageGroupsBtn" data-i18n-title="manageCategoriesTitle" title="Kategorien verwalten" data-i18n="manageCategories">Kategorien</button>
       </div>
-      <input type="text" id="searchInput" placeholder="Sender suchen…">
+      <input type="text" id="searchInput" data-i18n-placeholder="searchChannelsPlaceholder" placeholder="Sender suchen…">
       <div class="channel-count" id="channelCount">0 Sender geladen</div>
     </div>
 
     <div class="channel-list" id="channelList">
-      <div class="empty-list">Noch keine Sender geladen.<br>Oben eine Playlist per URL oder Datei hinzufügen.</div>
+      <div class="empty-list" data-i18n="noChannelsLoaded">Noch keine Sender geladen.<br>Oben eine Playlist per URL oder Datei hinzufügen.</div>
     </div>
   </aside>
 
@@ -746,14 +747,14 @@
     <div class="stage">
       <video id="video" controls playsinline></video>
       <div class="stage-empty" id="stageEmpty">
-        <div class="big">Kein Sender ausgewählt</div>
-        <div>Wähle links einen Sender aus der Liste</div>
+        <div class="big" data-i18n="noChannelSelected">Kein Sender ausgewählt</div>
+        <div data-i18n="selectChannelHint">Wähle links einen Sender aus der Liste</div>
       </div>
       <div class="tuning-overlay" id="tuningOverlay"><canvas id="staticCanvas"></canvas></div>
 
       <div class="resume-banner" id="fileReconnectBanner">
-        <div class="rb-text">📁 Verknüpfter Konfigurationsordner gefunden - Zugriff erneut erlauben, um zu laden und den letzten Sender fortzusetzen.</div>
-        <button class="btn-primary btn-sm" id="reconnectFileBtn">Verbinden</button>
+        <div class="rb-text" data-i18n="reconnectBannerText">📁 Verknüpfter Konfigurationsordner gefunden - Zugriff erneut erlauben, um zu laden und den letzten Sender fortzusetzen.</div>
+        <button class="btn-primary btn-sm" id="reconnectFileBtn" data-i18n="connect">Verbinden</button>
         <button class="btn-ghost btn-sm" id="reconnectDismissBtn">✕</button>
       </div>
 
@@ -775,7 +776,7 @@
     </div>
     <div class="stage-footer">
       <div class="footer-info">
-        <div class="hint" id="playerHint">Bereit.</div>
+        <div class="hint" id="playerHint" data-i18n="ready">Bereit.</div>
         <div class="footer-epg" id="footerEpg">
           <div class="footer-progress-row">
             <div class="footer-progress"><div class="footer-progress-bar" id="footerProgressBar"></div></div>
@@ -787,33 +788,33 @@
       </div>
       <div class="track-controls">
         <div class="tc-group">
-          <label for="audioTrackSelect">Audio</label>
-          <select id="audioTrackSelect" disabled><option>Standard</option></select>
+          <label for="audioTrackSelect" data-i18n="audio">Audio</label>
+          <select id="audioTrackSelect" disabled><option data-i18n="standard">Standard</option></select>
         </div>
         <div class="tc-group">
-          <label for="subtitleTrackSelect">Untertitel</label>
-          <select id="subtitleTrackSelect" disabled><option>Keine</option></select>
+          <label for="subtitleTrackSelect" data-i18n="subtitles">Untertitel</label>
+          <select id="subtitleTrackSelect" disabled><option data-i18n="none">Keine</option></select>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Einstellungen-Dialog -->
+<!-- Settings dialog -->
 <div class="modal-overlay" id="settingsModal">
   <div class="modal-panel">
     <div class="modal-head">
-      <h2>Einstellungen</h2>
-      <button class="btn-icon" id="closeSettingsBtn" aria-label="Schließen">✕</button>
+      <h2 data-i18n="settingsTitle">Einstellungen</h2>
+      <button class="btn-icon" id="closeSettingsBtn" data-i18n-aria-label="close" aria-label="Schließen">✕</button>
     </div>
     <div class="modal-body">
 
       <div class="modal-section acc-sec" data-acc="start">
-        <button class="acc-title" data-acc-toggle="start"><span>Beim Start</span><span class="acc-chevron">▸</span></button>
+        <button class="acc-title" data-acc-toggle="start"><span data-i18n="secStart">Beim Start</span><span class="acc-chevron">▸</span></button>
         <div class="acc-body">
         <label class="check">
           <input type="checkbox" id="restoreLastToggle">
-          <span>Zuletzt gesehenen Kanal beim Start vorschlagen - zeigt beim Öffnen eine kurze „Weiterschauen"-Leiste mit dem letzten Sender an, statt automatisch mit Ton zu starten.</span>
+          <span data-i18n="restoreLastLabel">Zuletzt gesehenen Kanal beim Start vorschlagen - zeigt beim Öffnen eine kurze „Weiterschauen"-Leiste mit dem letzten Sender an, statt automatisch mit Ton zu starten.</span>
         </label>
         </div>
       </div>
@@ -821,19 +822,19 @@
       <hr class="divider">
 
       <div class="modal-section acc-sec" data-acc="playback">
-        <button class="acc-title" data-acc-toggle="playback"><span>Wiedergabe</span><span class="acc-chevron">▾</span></button>
+        <button class="acc-title" data-acc-toggle="playback"><span data-i18n="secPlayback">Wiedergabe</span><span class="acc-chevron">▾</span></button>
         <div class="acc-body">
         <label class="check">
           <input type="checkbox" id="subtitlesDefaultToggle">
-          <span>Untertitel standardmäßig aktivieren, wenn ein Sender welche anbietet</span>
+          <span data-i18n="subtitlesDefaultLabel">Untertitel standardmäßig aktivieren, wenn ein Sender welche anbietet</span>
         </label>
         <div class="modal-row">
           <div style="flex:1; min-width:140px;">
-            <div class="field-hint">Bevorzugte Untertitel-Sprache (Code, z. B. de, en)</div>
+            <div class="field-hint" data-i18n="preferredSubtitleLang">Bevorzugte Untertitel-Sprache (Code, z. B. de, en)</div>
             <input type="text" id="subtitleLangInput" placeholder="de">
           </div>
           <div style="flex:1; min-width:140px;">
-            <div class="field-hint">Bevorzugte Audio-Sprache (Code, z. B. de, en)</div>
+            <div class="field-hint" data-i18n="preferredAudioLang">Bevorzugte Audio-Sprache (Code, z. B. de, en)</div>
             <input type="text" id="audioLangInput" placeholder="de">
           </div>
         </div>
@@ -843,42 +844,42 @@
       <hr class="divider">
 
       <div class="modal-section acc-sec" id="fileLinkSection" data-acc="config">
-        <button class="acc-title" data-acc-toggle="config"><span>Konfigurationsdatei</span><span class="acc-chevron">▸</span></button>
+        <button class="acc-title" data-acc-toggle="config"><span data-i18n="secConfigFile">Konfigurationsdatei</span><span class="acc-chevron">▸</span></button>
         <div class="acc-body">
-        <div class="sec-desc" id="fileLinkStatus">Nicht verknüpft - Änderungen werden derzeit nur lokal im Browser gespeichert.</div>
+        <div class="sec-desc" id="fileLinkStatus" data-i18n="fileLinkNotLinked">Nicht verknüpft - Änderungen werden derzeit nur lokal im Browser gespeichert.</div>
         <div class="modal-row">
-          <button class="btn-secondary btn-sm" id="linkFolderBtn">Ordner wählen (z. B. der Ordner dieser HTML-Datei)</button>
-          <button class="btn-danger btn-sm" id="unlinkFileBtn" style="display:none;">Verknüpfung entfernen</button>
+          <button class="btn-secondary btn-sm" id="linkFolderBtn" data-i18n="chooseFolderBtn">Ordner wählen (z. B. der Ordner dieser HTML-Datei)</button>
+          <button class="btn-danger btn-sm" id="unlinkFileBtn" style="display:none;" data-i18n="unlinkBtn">Verknüpfung entfernen</button>
         </div>
-        <div class="field-hint">Es wird darin die Datei „signal-config.json" angelegt bzw. gelesen. Es wird nichts an Drittanbieter-Server übertragen - alles bleibt auf deinem Rechner.</div>
+        <div class="field-hint" data-i18n="configFileHint">Es wird darin die Datei „signal-config.json" angelegt bzw. gelesen. Es wird nichts an Drittanbieter-Server übertragen - alles bleibt auf deinem Rechner.</div>
         </div>
       </div>
 
       <hr class="divider">
 
       <div class="modal-section acc-sec" data-acc="proxy">
-        <button class="acc-title" data-acc-toggle="proxy"><span>Automatische EPG-/Playlist-Aktualisierung (lokaler Proxy)</span><span class="acc-chevron">▸</span></button>
+        <button class="acc-title" data-acc-toggle="proxy"><span data-i18n="secProxy">Automatische EPG-/Playlist-Aktualisierung (lokaler Proxy)</span><span class="acc-chevron">▸</span></button>
         <div class="acc-body">
-        <div class="sec-desc">Manche Server (z. B. viele EPG-Anbieter) blockieren direkte Browser-Anfragen aus Sicherheitsgründen (CORS) - daher der Fehler „NetworkError". Damit sich das EPG trotzdem automatisch aktualisiert, kannst du einen winzigen Hilfsserver auf deinem eigenen Rechner starten. Er läuft ausschließlich lokal (127.0.0.1) und leitet nur die von dir eingetragenen URLs weiter - es wird nichts an fremde Dritte gesendet.</div>
+        <div class="sec-desc" data-i18n="proxyDesc">Manche Server (z. B. viele EPG-Anbieter) blockieren direkte Browser-Anfragen aus Sicherheitsgründen (CORS) - daher der Fehler „NetworkError". Damit sich das EPG trotzdem automatisch aktualisiert, kannst du einen winzigen Hilfsserver auf deinem eigenen Rechner starten. Er läuft ausschließlich lokal (127.0.0.1) und leitet nur die von dir eingetragenen URLs weiter - es wird nichts an fremde Dritte gesendet.</div>
         <label class="check">
           <input type="checkbox" id="proxyEnabledToggle">
-          <span>Lokalen Proxy verwenden, wenn eine direkte Anfrage blockiert wird</span>
+          <span data-i18n="useLocalProxyLabel">Lokalen Proxy verwenden, wenn eine direkte Anfrage blockiert wird</span>
         </label>
         <div class="modal-row">
           <div style="flex:1; min-width:140px;">
-            <div class="field-hint">Proxy-Port</div>
+            <div class="field-hint" data-i18n="proxyPortLabel">Proxy-Port</div>
             <input type="number" id="proxyPortInput" placeholder="8787" min="1" max="65535">
           </div>
           <div style="flex:1; min-width:140px;">
-            <div class="field-hint">EPG automatisch neu laden alle (Stunden)</div>
+            <div class="field-hint" data-i18n="epgRefreshHoursLabel">EPG automatisch neu laden alle (Stunden)</div>
             <input type="number" id="epgRefreshHoursInput" placeholder="4" min="1" max="48">
           </div>
         </div>
         <div class="modal-row">
-          <button class="btn-secondary btn-sm" id="downloadProxyBtn">epg_proxy.py herunterladen</button>
-          <button class="btn-secondary btn-sm" id="testProxyBtn">Proxy testen</button>
+          <button class="btn-secondary btn-sm" id="downloadProxyBtn" data-i18n="downloadProxyBtn">epg_proxy.py herunterladen</button>
+          <button class="btn-secondary btn-sm" id="testProxyBtn" data-i18n="testProxyBtn">Proxy testen</button>
         </div>
-        <div class="field-hint">Einmalig per Doppelklick oder <code>python epg_proxy.py</code> starten (benötigt nur Python, keine Zusatz-Pakete). Er muss laufen, während du den Player benutzt.</div>
+        <div class="field-hint" data-i18n="proxyRunHint">Einmalig per Doppelklick oder <code>python epg_proxy.py</code> starten (benötigt nur Python, keine Zusatz-Pakete). Er muss laufen, während du den Player benutzt.</div>
         <div class="status-msg" id="proxyStatus"></div>
         </div>
       </div>
@@ -886,18 +887,18 @@
       <hr class="divider">
 
       <div class="modal-section acc-sec" data-acc="data">
-        <button class="acc-title" data-acc-toggle="data"><span>Daten</span><span class="acc-chevron">▸</span></button>
+        <button class="acc-title" data-acc-toggle="data"><span data-i18n="secData">Daten</span><span class="acc-chevron">▸</span></button>
         <div class="acc-body">
-        <div class="sec-desc">Deine Playlists, Favoriten und Kategorien werden automatisch für dich gespeichert. Zusätzlich kannst du eine Sicherungsdatei exportieren oder wiederherstellen.</div>
+        <div class="sec-desc" data-i18n="dataDesc">Deine Playlists, Favoriten und Kategorien werden automatisch für dich gespeichert. Zusätzlich kannst du eine Sicherungsdatei exportieren oder wiederherstellen.</div>
         <div class="modal-row">
-          <button class="btn-secondary btn-sm" id="exportConfigBtn">Konfiguration exportieren (.json)</button>
+          <button class="btn-secondary btn-sm" id="exportConfigBtn" data-i18n="exportConfigBtn">Konfiguration exportieren (.json)</button>
           <label class="btn-secondary btn-sm" style="cursor:pointer;">
-            Konfiguration importieren
+            <span data-i18n="importConfigBtn">Konfiguration importieren</span>
             <input type="file" id="importConfigInput" accept="application/json,.json" style="display:none;">
           </label>
         </div>
         <div class="modal-row">
-          <button class="btn-danger btn-sm" id="clearAllBtn">Alle Daten löschen</button>
+          <button class="btn-danger btn-sm" id="clearAllBtn" data-i18n="clearAllBtn">Alle Daten löschen</button>
         </div>
         <div class="status-msg" id="settingsStatus"></div>
         </div>
@@ -907,68 +908,68 @@
   </div>
 </div>
 
-<!-- Erststart: fragen, wie die Konfiguration gespeichert werden soll -->
+<!-- First run: ask how the configuration should be saved -->
 <div class="modal-overlay" id="fileSetupModal">
   <div class="modal-panel">
     <div class="modal-head">
-      <h2>Konfiguration dauerhaft speichern</h2>
-      <button class="btn-icon" id="closeFileSetupBtn" aria-label="Schließen">✕</button>
+      <h2 data-i18n="fileSetupTitle">Konfiguration dauerhaft speichern</h2>
+      <button class="btn-icon" id="closeFileSetupBtn" data-i18n-aria-label="close" aria-label="Schließen">✕</button>
     </div>
     <div class="modal-body">
-      <div class="sec-desc">
+      <div class="sec-desc" data-i18n="fileSetupDesc">
         Playlists, Favoriten und Einstellungen können in einer eigenen Konfigurationsdatei („signal-config.json") direkt in einem Ordner deiner Wahl gespeichert werden - z. B. genau dem Ordner, in dem diese HTML-Datei liegt. Beim nächsten Start wird sie automatisch erkannt, gelesen und der zuletzt gesehene Sender direkt weiter abgespielt. Es wird dabei nichts ins Internet übertragen.
       </div>
       <div class="modal-row" style="margin-top:10px;">
-        <button class="btn-primary btn-sm" id="setupChooseFolderBtn">Ordner wählen</button>
+        <button class="btn-primary btn-sm" id="setupChooseFolderBtn" data-i18n="chooseFolder">Ordner wählen</button>
       </div>
       <div class="modal-row">
-        <button class="btn-ghost btn-sm" id="setupSkipBtn">Nur lokal im Browser speichern / Später fragen</button>
+        <button class="btn-ghost btn-sm" id="setupSkipBtn" data-i18n="localOnlySkip">Nur lokal im Browser speichern / Später fragen</button>
       </div>
       <div class="status-msg" id="fileSetupStatus"></div>
     </div>
   </div>
 </div>
 
-<!-- Kategorien-Verwaltung-Dialog -->
+<!-- Category management dialog -->
 <div class="modal-overlay" id="groupsModal">
   <div class="modal-panel">
     <div class="modal-head">
-      <h2>Kategorien verwalten</h2>
-      <button class="btn-icon" id="closeGroupsBtn" aria-label="Schließen">✕</button>
+      <h2 data-i18n="manageCategoriesTitle">Kategorien verwalten</h2>
+      <button class="btn-icon" id="closeGroupsBtn" data-i18n-aria-label="close" aria-label="Schließen">✕</button>
     </div>
     <div class="modal-body">
-      <div class="sec-desc">Umbenennen oder ausblenden - die Original-Playlist-Datei bleibt dabei unverändert. Ausgeblendete Kategorien lassen sich hier jederzeit wiederherstellen.</div>
+      <div class="sec-desc" data-i18n="renameOrHideDesc">Umbenennen oder ausblenden - die Original-Playlist-Datei bleibt dabei unverändert. Ausgeblendete Kategorien lassen sich hier jederzeit wiederherstellen.</div>
       <div id="groupRows"></div>
       <div class="modal-row" style="justify-content:flex-end; margin-top:6px;">
-        <button class="btn-ghost btn-sm" id="cancelGroupsBtn">Abbrechen</button>
-        <button class="btn-primary btn-sm" id="saveGroupsBtn">Speichern</button>
+        <button class="btn-ghost btn-sm" id="cancelGroupsBtn" data-i18n="cancel">Abbrechen</button>
+        <button class="btn-primary btn-sm" id="saveGroupsBtn" data-i18n="save">Speichern</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- EPG-Programmvorschau ("Teletext")-Popup -->
+<!-- EPG program guide ("teletext") popup -->
 <div class="modal-overlay" id="epgGuideModal">
   <div class="modal-panel wide">
     <div class="modal-head">
-      <h2>Programmvorschau</h2>
-      <button class="btn-icon" id="closeEpgGuideBtn" aria-label="Schließen">✕</button>
+      <h2 data-i18n="programGuideTitle">Programmvorschau</h2>
+      <button class="btn-icon" id="closeEpgGuideBtn" data-i18n-aria-label="close" aria-label="Schließen">✕</button>
     </div>
     <div class="modal-body">
       <div class="modal-row">
         <select id="epgGuideChannelSelect" style="flex:1; min-width:200px;"></select>
       </div>
       <div class="modal-row">
-        <input type="text" id="epgGuideSearchInput" placeholder="Sendung suchen…" style="flex:1;">
+        <input type="text" id="epgGuideSearchInput" data-i18n-placeholder="searchProgramPlaceholder" placeholder="Sendung suchen…" style="flex:1;">
       </div>
       <div class="epg-guide-list" id="epgGuideList"></div>
     </div>
   </div>
 </div>
 
-<!-- EPG-Quelle (wird per JS unterhalb der Playlist-Verwaltung eingefügt) -->
+<!-- EPG source (inserted via JS below the playlist manager) -->
 
-<!-- Lokal eingebettete Bibliotheken (kein externes CDN, keine Datenübertragung an Dritte) -->
+<!-- Locally embedded libraries (no external CDN, no data sent to third parties) -->
 <script>
 /* pako 2.1.0 (Inflate) - MIT License - https://github.com/nodeca/pako */
 /*! pako 2.1.0 https://github.com/nodeca/pako @license (MIT AND Zlib) */
@@ -985,7 +986,403 @@
 <script>
 (function(){
   // ============================================================
-  // Elemente
+  // i18n / Language switching (English default, more languages can be added)
+  // ============================================================
+  const LANG_KEY = 'signal:lang';
+  // Registry of available UI languages. Add new languages here by adding
+  // a matching entry to I18N below and registering the language code and
+  // display name in this list - the dropdown is built from this array.
+  const AVAILABLE_LANGS = [
+    { code: 'en', label: 'English' },
+    { code: 'de', label: 'Deutsch' }
+  ];
+  const I18N = {
+    de: {
+      appSub: 'IPTV Wiedergabe für M3U / HLS Playlists',
+      sidebarToggleTitle: 'Senderliste ein-/ausblenden',
+      proxyAutoBadgeTitle: 'Lokaler Proxy erkannt und aktiv',
+      epgGuideBtnTitle: 'Programmvorschau (EPG)',
+      settingsBtnTitle: 'Einstellungen',
+      langToggleTitle: 'Sprache wechseln / Switch language',
+      pmToggleTitle: 'Playlisten ein-/ausklappen',
+      playlistsLabel: 'Playlists',
+      addNew: '+ Neu',
+      pmEmpty: 'Noch keine Playlist gespeichert.',
+      newPlaylistHeading: 'Neue Playlist hinzufügen',
+      namePlaceholder: 'Name (z. B. „Mein Anbieter“)',
+      playlistUrlLabel: 'Playlist-URL',
+      playlistUrlPlaceholder: 'https://beispiel.de/playlist.m3u8',
+      load: 'Laden',
+      orUploadFile: 'Oder Datei hochladen',
+      m3uDropLabel: '.m3u / .m3u8-Datei auswählen oder ablegen',
+      cancel: 'Abbrechen',
+      tabAll: 'Alle Sender',
+      tabFav: '★ Favoriten',
+      allCategories: 'Alle Kategorien',
+      manageCategories: 'Kategorien',
+      manageCategoriesTitle: 'Kategorien verwalten',
+      searchChannelsPlaceholder: 'Sender suchen…',
+      channelsLoadedCount: (n) => n + ' Sender geladen',
+      noChannelsLoaded: 'Noch keine Sender geladen.<br>Oben eine Playlist per URL oder Datei hinzufügen.',
+      noChannelSelected: 'Kein Sender ausgewählt',
+      selectChannelHint: 'Wähle links einen Sender aus der Liste',
+      reconnectBannerText: '📁 Verknüpfter Konfigurationsordner gefunden - Zugriff erneut erlauben, um zu laden und den letzten Sender fortzusetzen.',
+      connect: 'Verbinden',
+      ready: 'Bereit.',
+      audio: 'Audio',
+      subtitles: 'Untertitel',
+      standard: 'Standard',
+      none: 'Keine',
+      off: 'Aus',
+      settingsTitle: 'Einstellungen',
+      close: 'Schließen',
+      secStart: 'Beim Start',
+      restoreLastLabel: 'Zuletzt gesehenen Kanal beim Start vorschlagen - zeigt beim Öffnen eine kurze „Weiterschauen"-Leiste mit dem letzten Sender an, statt automatisch mit Ton zu starten.',
+      secPlayback: 'Wiedergabe',
+      subtitlesDefaultLabel: 'Untertitel standardmäßig aktivieren, wenn ein Sender welche anbietet',
+      preferredSubtitleLang: 'Bevorzugte Untertitel-Sprache (Code, z. B. de, en)',
+      preferredAudioLang: 'Bevorzugte Audio-Sprache (Code, z. B. de, en)',
+      secConfigFile: 'Konfigurationsdatei',
+      fileLinkNotLinked: 'Nicht verknüpft - Änderungen werden derzeit nur lokal im Browser gespeichert.',
+      chooseFolderBtn: 'Ordner wählen (z. B. der Ordner dieser HTML-Datei)',
+      unlinkBtn: 'Verknüpfung entfernen',
+      configFileHint: 'Es wird darin die Datei „signal-config.json" angelegt bzw. gelesen. Es wird nichts an Drittanbieter-Server übertragen - alles bleibt auf deinem Rechner.',
+      secProxy: 'Automatische EPG-/Playlist-Aktualisierung (lokaler Proxy)',
+      proxyDesc: 'Manche Server (z. B. viele EPG-Anbieter) blockieren direkte Browser-Anfragen aus Sicherheitsgründen (CORS) - daher der Fehler „NetworkError". Damit sich das EPG trotzdem automatisch aktualisiert, kannst du einen winzigen Hilfsserver auf deinem eigenen Rechner starten. Er läuft ausschließlich lokal (127.0.0.1) und leitet nur die von dir eingetragenen URLs weiter - es wird nichts an fremde Dritte gesendet.',
+      useLocalProxyLabel: 'Lokalen Proxy verwenden, wenn eine direkte Anfrage blockiert wird',
+      proxyPortLabel: 'Proxy-Port',
+      epgRefreshHoursLabel: 'EPG automatisch neu laden alle (Stunden)',
+      downloadProxyBtn: 'epg_proxy.py herunterladen',
+      testProxyBtn: 'Proxy testen',
+      proxyRunHint: 'Einmalig per Doppelklick oder <code>python epg_proxy.py</code> starten (benötigt nur Python, keine Zusatz-Pakete). Er muss laufen, während du den Player benutzt.',
+      secData: 'Daten',
+      dataDesc: 'Deine Playlists, Favoriten und Kategorien werden automatisch für dich gespeichert. Zusätzlich kannst du eine Sicherungsdatei exportieren oder wiederherstellen.',
+      exportConfigBtn: 'Konfiguration exportieren (.json)',
+      importConfigBtn: 'Konfiguration importieren',
+      clearAllBtn: 'Alle Daten löschen',
+      fileSetupTitle: 'Konfiguration dauerhaft speichern',
+      fileSetupDesc: 'Playlists, Favoriten und Einstellungen können in einer eigenen Konfigurationsdatei („signal-config.json") direkt in einem Ordner deiner Wahl gespeichert werden - z. B. genau dem Ordner, in dem diese HTML-Datei liegt. Beim nächsten Start wird sie automatisch erkannt, gelesen und der zuletzt gesehene Sender direkt weiter abgespielt. Es wird dabei nichts ins Internet übertragen.',
+      chooseFolder: 'Ordner wählen',
+      localOnlySkip: 'Nur lokal im Browser speichern / Später fragen',
+      renameOrHideDesc: 'Umbenennen oder ausblenden - die Original-Playlist-Datei bleibt dabei unverändert. Ausgeblendete Kategorien lassen sich hier jederzeit wiederherstellen.',
+      save: 'Speichern',
+      programGuideTitle: 'Programmvorschau',
+      searchProgramPlaceholder: 'Sendung suchen…',
+      epgSourceForTitle: 'EPG-Quelle für diese Playlist',
+      deleteLabel: 'Löschen',
+      epgSourceXmltvFor: (name) => 'EPG-Quelle (XMLTV) für „' + name + '"',
+      epgUrlPlaceholder: 'https://.../epg.xml.gz',
+      fileUploaded: 'Datei hochgeladen (erneut hochladen, falls nötig)',
+      xmlDropLabel: '.xml / .xml.gz Datei hochladen',
+      urlSrc: 'URL',
+      fileSrc: 'Datei',
+      epgSourceStored: 'EPG-Quelle hinterlegt',
+      refresh: 'Aktualisieren',
+      rename: 'Umbenennen',
+      promptNewName: 'Neuer Name für diese Playlist:',
+      confirmDeletePlaylist: (name) => '„' + name + '" inklusive Favoriten und Kategorien-Anpassungen wirklich löschen?',
+      pleaseEnterEpgUrl: 'Bitte EPG-URL eingeben.',
+      loadingEpg: 'Lade EPG…',
+      epgLoadedCount: (n) => 'EPG geladen: ' + n + ' Sender mit Programmdaten.',
+      epgLoadFailed: (msg) => 'EPG konnte nicht geladen werden (' + msg + '). Aktiviere den lokalen Proxy in den Einstellungen (empfohlen, damit die Daten auch automatisch aktuell bleiben), oder lade die Datei stattdessen manuell hoch.',
+      epgLoadedFileNote: (n) => 'EPG geladen: ' + n + ' Sender mit Programmdaten. Hinweis: Datei-EPGs werden aus Speicherplatzgründen nicht dauerhaft gespeichert - beim nächsten Besuch bitte erneut hochladen.',
+      epgFileReadFailed: (msg) => 'EPG-Datei konnte nicht gelesen werden (' + msg + ').',
+      playlistActive: (name, n) => '„' + name + '" aktiv: ' + n + ' Sender.',
+      playlistUpdated: (name) => '„' + name + '" aktualisiert.',
+      updateFailed: (msg) => 'Aktualisieren fehlgeschlagen (' + msg + ').',
+      noValidChannels: 'Keine gültigen Sender in dieser Playlist gefunden.',
+      defaultPlaylistName: 'Playlist',
+      defaultUploadedPlaylistName: 'Hochgeladene Playlist',
+      playlistSaved: (name, n) => '„' + name + '" gespeichert: ' + n + ' Sender.',
+      pleaseEnterPlaylistUrl: 'Bitte zuerst eine Playlist-URL eingeben.',
+      loadingPlaylist: 'Lade Playlist…',
+      playlistLoadFailed: (msg) => 'Playlist konnte nicht geladen werden (' + msg + '). Oft blockiert der Server browserseitige Anfragen (CORS) - aktiviere den lokalen Proxy in den Einstellungen, oder lade die Datei stattdessen herunter und hoch.',
+      fileReadFailed: 'Datei konnte nicht gelesen werden.',
+      pleaseSelectPlaylistFirst: 'Bitte zuerst eine Playlist auswählen.',
+      restore: 'Wiederherstellen',
+      hideCat: 'Ausblenden',
+      noCategoriesInPlaylist: 'Keine Kategorien in dieser Playlist.',
+      favOnlyAllCategoriesTitle: 'In den Favoriten werden immer alle Kategorien angezeigt.',
+      noFavYet: 'Noch keine Favoriten.<br>Tippe auf den Stern bei einem Sender, um ihn hier anzupinnen.',
+      noChannelsFound: 'Keine Sender gefunden.<br>Suche oder Filter anpassen.',
+      channelCountFav: (n) => n + ' Favoriten',
+      channelCountOf: (n, total) => n + ' von ' + total + ' Sendern',
+      favoriteTitle: 'Favorit',
+      epgNowLabel: 'Jetzt',
+      epgMinLeft: (n) => 'noch ' + n + ' Min',
+      epgAfter: (time, title) => 'Danach ' + time + ': ' + title,
+      footerProgressTime: (a, b, pct) => a + ' / ' + b + ' Min (' + pct + '%)',
+      connectingToStream: 'Verbinde mit Stream…',
+      playbackOf: (name) => 'Wiedergabe: ' + name,
+      playbackNativeNote: (name) => 'Wiedergabe: ' + name + ' (native HLS - keine Mehrfachspuren verfügbar)',
+      playbackErrorHint: 'Fehler beim Abspielen dieses Senders.',
+      streamError: (details) => 'Stream-Fehler: ' + details + '.',
+      unknown: 'unbekannt',
+      playbackNotAutoStarted: 'Wiedergabe konnte nicht automatisch gestartet werden. Play-Button nutzen.',
+      streamNotPlayable: 'Stream nicht abspielbar.',
+      trackNumber: (n) => 'Spur ' + n,
+      noProgramDataForChannel: 'Keine Programmdaten für diesen Sender.',
+      noUpcomingPrograms: 'Keine anstehenden Sendungen in den geladenen Programmdaten.',
+      noProgramsFound: 'Keine Sendungen gefunden.',
+      nowTag: 'JETZT',
+      noProgramDataLoaded: 'Keine Programmdaten geladen',
+      testingProxy: (port) => 'Teste Verbindung zu 127.0.0.1:' + port + ' …',
+      proxyReachable: 'Proxy erreichbar und einsatzbereit.',
+      proxyUnreachable: (msg) => 'Proxy nicht erreichbar. Läuft epg_proxy.py? (' + msg + ')',
+      folderLinkedExisting: 'Bestehende Konfiguration aus dem Ordner geladen und verknüpft.',
+      folderLinked: 'Ordner verknüpft - signal-config.json wurde dort angelegt.',
+      folderSelectAbortedOrFailed: 'Ordnerauswahl abgebrochen oder fehlgeschlagen.',
+      unlinkedNote: 'Verknüpfung entfernt. Änderungen werden nur noch lokal im Browser gespeichert.',
+      configExported: 'Konfiguration exportiert.',
+      invalidFormat: 'Ungültiges Format',
+      importFailed: 'Import fehlgeschlagen: Datei ist keine gültige Konfiguration.',
+      configImported: (n) => 'Konfiguration importiert: ' + n + ' Playlist(s).',
+      confirmDeleteAll: 'Wirklich ALLE gespeicherten Playlists, Favoriten und Einstellungen löschen? Dies kann nicht rückgängig gemacht werden.',
+      allDataDeleted: 'Alle Daten gelöscht.',
+      linkingFolder: 'Ordner wird verknüpft…',
+      folderLinkedShort: 'Ordner verknüpft.',
+      abortedOrFailed: 'Abgebrochen oder fehlgeschlagen.',
+      browserNoFolderLink: 'Dein Browser unterstützt keine direkte Ordner-Verknüpfung (nur Chrome/Edge). Die Konfiguration wird stattdessen lokal im Browser gespeichert (an diesen Datei-Pfad gebunden) - zusätzlich per Export/Import sicherbar.',
+      linkedTo: (name) => 'Verknüpft: „' + name + '" im gewählten Ordner - wird bei jeder Änderung automatisch aktualisiert und beim nächsten Start direkt von dort gelesen.',
+      notLinkedShort: 'Nicht verknüpft - Änderungen werden derzeit nur lokal im Browser gespeichert (an diesen Datei-Pfad gebunden).',
+      lastSaved: (name, time) => 'Zuletzt gespeichert: ' + name + ' · ' + time,
+      fileSaveFailed: (msg) => 'Datei-Speichern fehlgeschlagen: ' + msg,
+      gzipNotAvailable: 'Gzip-Unterstützung nicht verfügbar',
+      unnamed: 'Unbenannt',
+      channelNum: (n) => 'Kanal ' + n,
+      generalGroup: 'Allgemein',
+      untitledProgram: 'Ohne Titel',
+      locale: 'de-DE'
+    },
+    en: {
+      appSub: 'IPTV playback for M3U / HLS playlists',
+      sidebarToggleTitle: 'Show/hide channel list',
+      proxyAutoBadgeTitle: 'Local proxy detected and active',
+      epgGuideBtnTitle: 'Program guide (EPG)',
+      settingsBtnTitle: 'Settings',
+      langToggleTitle: 'Switch language / Sprache wechseln',
+      pmToggleTitle: 'Expand/collapse playlists',
+      playlistsLabel: 'Playlists',
+      addNew: '+ New',
+      pmEmpty: 'No playlist saved yet.',
+      newPlaylistHeading: 'Add new playlist',
+      namePlaceholder: 'Name (e.g. "My Provider")',
+      playlistUrlLabel: 'Playlist URL',
+      playlistUrlPlaceholder: 'https://example.com/playlist.m3u8',
+      load: 'Load',
+      orUploadFile: 'Or upload a file',
+      m3uDropLabel: 'Choose or drop a .m3u / .m3u8 file',
+      cancel: 'Cancel',
+      tabAll: 'All Channels',
+      tabFav: '★ Favorites',
+      allCategories: 'All Categories',
+      manageCategories: 'Categories',
+      manageCategoriesTitle: 'Manage categories',
+      searchChannelsPlaceholder: 'Search channels…',
+      channelsLoadedCount: (n) => n + ' channels loaded',
+      noChannelsLoaded: 'No channels loaded yet.<br>Add a playlist above via URL or file.',
+      noChannelSelected: 'No channel selected',
+      selectChannelHint: 'Choose a channel from the list on the left',
+      reconnectBannerText: '📁 Linked configuration folder found - grant access again to load it and resume the last channel.',
+      connect: 'Connect',
+      ready: 'Ready.',
+      audio: 'Audio',
+      subtitles: 'Subtitles',
+      standard: 'Default',
+      none: 'None',
+      off: 'Off',
+      settingsTitle: 'Settings',
+      close: 'Close',
+      secStart: 'On Startup',
+      restoreLastLabel: 'Suggest the last watched channel on startup - shows a brief "continue watching" bar with the last channel when opening, instead of starting automatically with sound.',
+      secPlayback: 'Playback',
+      subtitlesDefaultLabel: 'Enable subtitles by default when a channel offers them',
+      preferredSubtitleLang: 'Preferred subtitle language (code, e.g. de, en)',
+      preferredAudioLang: 'Preferred audio language (code, e.g. de, en)',
+      secConfigFile: 'Configuration File',
+      fileLinkNotLinked: 'Not linked - changes are currently saved locally in the browser only.',
+      chooseFolderBtn: 'Choose folder (e.g. the folder containing this HTML file)',
+      unlinkBtn: 'Remove link',
+      configFileHint: 'This creates or reads a file called "signal-config.json" there. Nothing is sent to third-party servers - everything stays on your computer.',
+      secProxy: 'Automatic EPG/playlist refresh (local proxy)',
+      proxyDesc: 'Some servers (e.g. many EPG providers) block direct browser requests for security reasons (CORS) - hence the "NetworkError". So the EPG can still refresh automatically, you can start a tiny helper server on your own computer. It runs exclusively locally (127.0.0.1) and only forwards the URLs you entered - nothing is sent to any third party.',
+      useLocalProxyLabel: 'Use local proxy when a direct request is blocked',
+      proxyPortLabel: 'Proxy port',
+      epgRefreshHoursLabel: 'Automatically reload EPG every (hours)',
+      downloadProxyBtn: 'Download epg_proxy.py',
+      testProxyBtn: 'Test proxy',
+      proxyRunHint: 'Start it once by double-clicking or with <code>python epg_proxy.py</code> (only needs Python, no extra packages). It must keep running while you use the player.',
+      secData: 'Data',
+      dataDesc: 'Your playlists, favorites, and categories are saved automatically. You can also export or restore a backup file.',
+      exportConfigBtn: 'Export configuration (.json)',
+      importConfigBtn: 'Import configuration',
+      clearAllBtn: 'Delete all data',
+      fileSetupTitle: 'Save configuration permanently',
+      fileSetupDesc: 'Playlists, favorites, and settings can be saved in a dedicated configuration file ("signal-config.json") directly in a folder of your choice - e.g. the very folder this HTML file is in. Next time it will be detected and read automatically, and the last watched channel will resume right away. Nothing is transmitted to the internet.',
+      chooseFolder: 'Choose folder',
+      localOnlySkip: 'Save locally in the browser only / Ask me later',
+      renameOrHideDesc: 'Rename or hide - the original playlist file remains unchanged. Hidden categories can be restored here at any time.',
+      save: 'Save',
+      programGuideTitle: 'Program Guide',
+      searchProgramPlaceholder: 'Search programs…',
+      epgSourceForTitle: 'EPG source for this playlist',
+      deleteLabel: 'Delete',
+      epgSourceXmltvFor: (name) => 'EPG source (XMLTV) for "' + name + '"',
+      epgUrlPlaceholder: 'https://.../epg.xml.gz',
+      fileUploaded: 'File uploaded (re-upload if needed)',
+      xmlDropLabel: 'Upload .xml / .xml.gz file',
+      urlSrc: 'URL',
+      fileSrc: 'File',
+      epgSourceStored: 'EPG source stored',
+      refresh: 'Refresh',
+      rename: 'Rename',
+      promptNewName: 'New name for this playlist:',
+      confirmDeletePlaylist: (name) => 'Really delete "' + name + '" including its favorites and category customizations?',
+      pleaseEnterEpgUrl: 'Please enter an EPG URL.',
+      loadingEpg: 'Loading EPG…',
+      epgLoadedCount: (n) => 'EPG loaded: ' + n + ' channels with program data.',
+      epgLoadFailed: (msg) => 'EPG could not be loaded (' + msg + '). Enable the local proxy in settings (recommended so data also stays automatically up to date), or upload the file manually instead.',
+      epgLoadedFileNote: (n) => 'EPG loaded: ' + n + ' channels with program data. Note: file-based EPGs are not saved permanently to save storage space - please re-upload on your next visit.',
+      epgFileReadFailed: (msg) => 'EPG file could not be read (' + msg + ').',
+      playlistActive: (name, n) => '"' + name + '" active: ' + n + ' channels.',
+      playlistUpdated: (name) => '"' + name + '" updated.',
+      updateFailed: (msg) => 'Update failed (' + msg + ').',
+      noValidChannels: 'No valid channels found in this playlist.',
+      defaultPlaylistName: 'Playlist',
+      defaultUploadedPlaylistName: 'Uploaded playlist',
+      playlistSaved: (name, n) => '"' + name + '" saved: ' + n + ' channels.',
+      pleaseEnterPlaylistUrl: 'Please enter a playlist URL first.',
+      loadingPlaylist: 'Loading playlist…',
+      playlistLoadFailed: (msg) => 'Playlist could not be loaded (' + msg + '). Servers often block browser-side requests (CORS) - enable the local proxy in settings, or download and upload the file instead.',
+      fileReadFailed: 'File could not be read.',
+      pleaseSelectPlaylistFirst: 'Please select a playlist first.',
+      restore: 'Restore',
+      hideCat: 'Hide',
+      noCategoriesInPlaylist: 'No categories in this playlist.',
+      favOnlyAllCategoriesTitle: 'All categories are always shown in Favorites.',
+      noFavYet: 'No favorites yet.<br>Tap the star on a channel to pin it here.',
+      noChannelsFound: 'No channels found.<br>Adjust search or filter.',
+      channelCountFav: (n) => n + ' favorites',
+      channelCountOf: (n, total) => n + ' of ' + total + ' channels',
+      favoriteTitle: 'Favorite',
+      epgNowLabel: 'Now',
+      epgMinLeft: (n) => n + ' min left',
+      epgAfter: (time, title) => 'Next at ' + time + ': ' + title,
+      footerProgressTime: (a, b, pct) => a + ' / ' + b + ' min (' + pct + '%)',
+      connectingToStream: 'Connecting to stream…',
+      playbackOf: (name) => 'Playing: ' + name,
+      playbackNativeNote: (name) => 'Playing: ' + name + ' (native HLS - no multiple tracks available)',
+      playbackErrorHint: 'Error playing this channel.',
+      streamError: (details) => 'Stream error: ' + details + '.',
+      unknown: 'unknown',
+      playbackNotAutoStarted: 'Playback could not start automatically. Use the play button.',
+      streamNotPlayable: 'Stream not playable.',
+      trackNumber: (n) => 'Track ' + n,
+      noProgramDataForChannel: 'No program data for this channel.',
+      noUpcomingPrograms: 'No upcoming programs in the loaded program data.',
+      noProgramsFound: 'No programs found.',
+      nowTag: 'NOW',
+      noProgramDataLoaded: 'No program data loaded',
+      testingProxy: (port) => 'Testing connection to 127.0.0.1:' + port + ' …',
+      proxyReachable: 'Proxy reachable and ready.',
+      proxyUnreachable: (msg) => 'Proxy unreachable. Is epg_proxy.py running? (' + msg + ')',
+      folderLinkedExisting: 'Existing configuration loaded from folder and linked.',
+      folderLinked: 'Folder linked - signal-config.json was created there.',
+      folderSelectAbortedOrFailed: 'Folder selection cancelled or failed.',
+      unlinkedNote: 'Link removed. Changes will now be saved locally in the browser only.',
+      configExported: 'Configuration exported.',
+      invalidFormat: 'Invalid format',
+      importFailed: 'Import failed: file is not a valid configuration.',
+      configImported: (n) => 'Configuration imported: ' + n + ' playlist(s).',
+      confirmDeleteAll: 'Really delete ALL saved playlists, favorites and settings? This cannot be undone.',
+      allDataDeleted: 'All data deleted.',
+      linkingFolder: 'Linking folder…',
+      folderLinkedShort: 'Folder linked.',
+      abortedOrFailed: 'Cancelled or failed.',
+      browserNoFolderLink: 'Your browser does not support direct folder linking (Chrome/Edge only). The configuration will instead be saved locally in the browser (tied to this file path) - additionally securable via export/import.',
+      linkedTo: (name) => 'Linked: "' + name + '" in the chosen folder - automatically updated on every change and read directly from there on next start.',
+      notLinkedShort: 'Not linked - changes are currently only saved locally in the browser (tied to this file path).',
+      lastSaved: (name, time) => 'Last saved: ' + name + ' · ' + time,
+      fileSaveFailed: (msg) => 'Saving to file failed: ' + msg,
+      gzipNotAvailable: 'Gzip support not available',
+      unnamed: 'Unnamed',
+      channelNum: (n) => 'Channel ' + n,
+      generalGroup: 'General',
+      untitledProgram: 'Untitled',
+      locale: 'en-US'
+    }
+  };
+  let currentLang = 'en';
+  try{ currentLang = localStorage.getItem(LANG_KEY) || (navigator.language && navigator.language.toLowerCase().startsWith('de') ? 'de' : 'en'); }catch(e){}
+  // Looks up a translation string by key; supports functions for dynamic strings.
+  function t(key, ...args){
+    const dict = I18N[currentLang] || I18N.de;
+    const val = dict[key];
+    if (typeof val === 'function') return val(...args);
+    return val !== undefined ? val : key;
+  }
+  // Returns the current locale code for date/time formatting (e.g. Intl, toLocaleTimeString).
+  function currentLocale(){ return t('locale'); }
+  // Applies all data-i18n / data-i18n-placeholder / data-i18n-title translations to the static markup.
+  function applyStaticI18n(){
+    document.documentElement.lang = currentLang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      el.innerHTML = t(key);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
+    });
+    document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+      el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
+    });
+    populateLangSelect();
+  }
+  // Builds the language dropdown options from AVAILABLE_LANGS (if not built yet)
+  // and syncs its selected value to the current language.
+  function populateLangSelect(){
+    const langSelect = document.getElementById('langSelect');
+    if (!langSelect) return;
+    if (langSelect.options.length !== AVAILABLE_LANGS.length){
+      langSelect.innerHTML = AVAILABLE_LANGS.map((l) =>
+        `<option value="${l.code}">${escapeHtml(l.label)}</option>`
+      ).join('');
+    }
+    langSelect.value = currentLang;
+  }
+  // Switches the active UI language, persists it, and re-renders all dynamic parts.
+  function setLang(lang){
+    if (!AVAILABLE_LANGS.some((l) => l.code === lang)) return;
+    currentLang = lang;
+    try{ localStorage.setItem(LANG_KEY, lang); }catch(e){}
+    applyStaticI18n();
+    if (typeof refreshDynamicI18n === 'function') refreshDynamicI18n();
+  }
+  // Re-renders all dynamically generated (JS-built) UI parts after a language switch,
+  // since applyStaticI18n() only covers the static markup with data-i18n attributes.
+  function refreshDynamicI18n(){
+    if (typeof renderPlaylistManager === 'function') renderPlaylistManager();
+    if (typeof buildGroupFilter === 'function') buildGroupFilter();
+    if (typeof renderChannelList === 'function') renderChannelList();
+    if (typeof updateFileLinkUI === 'function') updateFileLinkUI();
+    if (typeof activeIndex !== 'undefined' && activeIndex >= 0 && typeof updateHudEpg === 'function' && typeof channels !== 'undefined'){
+      updateHudEpg(channels[activeIndex]);
+    }
+    if (typeof epgGuideModal !== 'undefined' && epgGuideModal.classList.contains('open')){
+      if (typeof populateEpgGuideChannelSelect === 'function') populateEpgGuideChannelSelect();
+      if (typeof renderEpgGuideList === 'function') renderEpgGuideList();
+    }
+    if (typeof hls !== 'undefined' && hls){
+      if (typeof populateAudioTracks === 'function') populateAudioTracks();
+      if (typeof populateSubtitleTracks === 'function') populateSubtitleTracks();
+    }
+  }
+
+  // ============================================================
+  // Elements
   // ============================================================
   const video = document.getElementById('video');
   const stageEmpty = document.getElementById('stageEmpty');
@@ -1020,6 +1417,7 @@
   const mainLayout = document.getElementById('mainLayout');
   const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
   const epgGuideBtn = document.getElementById('epgGuideBtn');
+  const langSelect = document.getElementById('langSelect');
   const epgGuideModal = document.getElementById('epgGuideModal');
   const closeEpgGuideBtn = document.getElementById('closeEpgGuideBtn');
   const epgGuideChannelSelect = document.getElementById('epgGuideChannelSelect');
@@ -1027,10 +1425,10 @@
   const epgGuideSearchInput = document.getElementById('epgGuideSearchInput');
 
   // ============================================================
-  // Einklappbare Senderliste (linke Spalte)
+  // Collapsible channel list (left column)
   // ============================================================
   const SIDEBAR_COLLAPSED_KEY = 'signal:sidebarCollapsed';
-  // Blendet die Senderliste (linke Spalte) ein oder aus und markiert den Toggle-Button.
+  // Shows or hides the channel list (left column) and marks the toggle button as active.
   function applySidebarCollapsed(collapsed){
     mainLayout.classList.toggle('sidebar-collapsed', collapsed);
     sidebarToggleBtn.classList.toggle('active', collapsed);
@@ -1050,12 +1448,12 @@
   const FS_ACCESS_OK = !!(window.showSaveFilePicker && window.showOpenFilePicker);
 
   // ============================================================
-  // Config-Datei: IndexedDB hält das FileSystemFileHandle über
-  // Neustarts hinweg, damit wir es beim nächsten Start wiederfinden.
+  // Config file: IndexedDB holds the FileSystemFileHandle across
+  // restarts, so we can find it again on the next launch.
   // ============================================================
   const IDB_NAME = 'signal-iptv-db';
   const IDB_STORE = 'handles';
-  // Öffnet die IndexedDB für persistente Datei-Handles, legt sie bei Bedarf an.
+  // Opens the IndexedDB for persistent file handles, creating it if needed.
   function idbOpen(){
     return new Promise((resolve, reject) => {
       const req = indexedDB.open(IDB_NAME, 1);
@@ -1064,7 +1462,7 @@
       req.onerror = () => reject(req.error);
     });
   }
-  // Speichert einen Wert unter einem Schlüssel in der IndexedDB.
+  // Stores a value under a key in IndexedDB.
   async function idbSet(key, val){
     const db = await idbOpen();
     return new Promise((resolve, reject) => {
@@ -1074,7 +1472,7 @@
       tx.onerror = () => reject(tx.error);
     });
   }
-  // Liest einen Wert aus der IndexedDB (oder null, falls nicht vorhanden).
+  // Reads a value from IndexedDB (or null if not present).
   async function idbGet(key){
     const db = await idbOpen();
     return new Promise((resolve, reject) => {
@@ -1084,7 +1482,7 @@
       req.onerror = () => reject(req.error);
     });
   }
-  // Löscht einen Wert aus der IndexedDB.
+  // Deletes a value from IndexedDB.
   async function idbDel(key){
     const db = await idbOpen();
     return new Promise((resolve, reject) => {
@@ -1100,37 +1498,37 @@
   let pendingDirHandle = null;
   const CONFIG_FILENAME = 'signal-config.json';
 
-  // Prüft die Zugriffsberechtigung eines Datei-/Ordner-Handles und fordert sie bei Bedarf an.
+  // Checks access permission for a file/folder handle and requests it if needed.
   async function verifyPermission(handle, mode){
     const opts = { mode };
     if ((await handle.queryPermission(opts)) === 'granted') return true;
     if ((await handle.requestPermission(opts)) === 'granted') return true;
     return false;
   }
-  // Schreibt ein Objekt als formatiertes JSON in eine Datei.
+  // Writes an object as formatted JSON to a file.
   async function writeConfigToFile(handle, data){
     const writable = await handle.createWritable();
     await writable.write(JSON.stringify(data, null, 2));
     await writable.close();
   }
-  // Liest und parst den JSON-Inhalt einer Datei (null bei leerer Datei).
+  // Reads and parses the JSON content of a file (null if the file is empty).
   async function readConfigFromFile(handle){
     const file = await handle.getFile();
     const text = await file.text();
     return text && text.trim() ? JSON.parse(text) : null;
   }
 
-  // Fallback ohne File System Access API: lokaler Browser-Speicher,
-  // fest an den Pfad dieser HTML-Datei gebunden (verlässt den Rechner nie,
-  // ähnlich einem Cookie, aber ohne dessen 4KB-Limit).
+  // Fallback without the File System Access API: local browser storage,
+  // tied to the path of this HTML file (never leaves the machine,
+  // similar to a cookie, but without its 4KB limit).
   function localFallbackKey(){
     return 'signal:config:' + (location.pathname || location.href || 'default');
   }
-  // Speichert die Konfiguration im localStorage-Fallback.
+  // Saves the configuration to the localStorage fallback.
   function saveLocalFallback(payload){
     try{ localStorage.setItem(localFallbackKey(), JSON.stringify(payload)); }catch(e){}
   }
-  // Lädt die Konfiguration aus dem localStorage-Fallback.
+  // Loads the configuration from the localStorage fallback.
   function loadLocalFallback(){
     try{
       const raw = localStorage.getItem(localFallbackKey());
@@ -1138,10 +1536,10 @@
     }catch(e){ return null; }
   }
 
-  const EPG_PROXY_SCRIPT = "#!/usr/bin/env python3\n\"\"\"\nSIGNAL IPTV Player - Lokaler CORS-Proxy fuer EPG-/Playlist-URLs\n==================================================================\n\nWarum gibt es das?\nManche EPG- oder Playlist-Server senden keine CORS-Freigabe-Header.\nBrowser blockieren dann JavaScript-Anfragen von der Player-Seite aus\n(Fehler \"NetworkError\" bzw. \"Failed to fetch\"), auch wenn der Server\nselbst erreichbar waere.\n\nDieses Skript startet einen winzigen Server NUR auf deinem eigenen\nRechner (127.0.0.1). Er nimmt Anfragen vom Player entgegen, holt die\ngewuenschte URL server-seitig (ohne CORS-Einschraenkung, da es kein\nBrowser ist) und schickt die Antwort mit einer CORS-Freigabe an den\nPlayer zurueck.\n\nEs werden AUSSCHLIESSLICH die URLs abgerufen, die du selbst im Player\nals Playlist- oder EPG-Quelle eingetragen hast. Es wird nichts\ngespeichert, geloggt oder an sonst irgendeinen Server geschickt.\n\nBenutzung:\n  1. Python 3 muss installiert sein (keine Zusatzpakete noetig).\n  2. Diese Datei per Doppelklick starten, oder im Terminal:\n         python3 epg_proxy.py\n  3. Im Player unter Einstellungen -> \"Lokalen Proxy verwenden\"\n     aktivieren (Standardport 8787 passt automatisch).\n  4. Das Fenster/Terminal muss offen bleiben, solange der Player\n     laeuft. Mit Strg+C oder Fenster schliessen beenden.\n\"\"\"\n\nimport sys\nimport json\nimport urllib.request\nimport urllib.error\nfrom http.server import BaseHTTPRequestHandler, ThreadingHTTPServer\nfrom urllib.parse import urlparse, parse_qs\n\nHOST = \"127.0.0.1\"   # Nur lokal erreichbar, nicht im Netzwerk sichtbar\nPORT = 8787\nTIMEOUT = 180         # Sekunden pro Anfrage (grosse EPG-Dateien brauchen laenger)\nMAX_BYTES = 200 * 1024 * 1024  # 200 MB Sicherheitslimit pro Antwort\nCHUNK_SIZE = 256 * 1024        # in Bloecken streamen statt alles auf einmal zu lesen\n\n\nclass ProxyHandler(BaseHTTPRequestHandler):\n    server_version = \"SignalEPGProxy/1.0\"\n    protocol_version = \"HTTP/1.1\"  # noetig, damit Transfer-Encoding: chunked funktioniert\n\n    def log_message(self, fmt, *args):\n        # Kompakteres, lesbares Log auf der Konsole statt des Standardformats\n        sys.stderr.write(\"[proxy] \" + (fmt % args) + \"\\n\")\n\n    def _cors_headers(self):\n        self.send_header(\"Access-Control-Allow-Origin\", \"*\")\n        self.send_header(\"Access-Control-Allow-Methods\", \"GET, OPTIONS\")\n        self.send_header(\"Access-Control-Allow-Headers\", \"*\")\n\n    def do_OPTIONS(self):\n        self.send_response(204)\n        self._cors_headers()\n        self.end_headers()\n\n    def do_GET(self):\n        parsed = urlparse(self.path)\n\n        if parsed.path == \"/health\":\n            body = json.dumps({\"status\": \"ok\", \"service\": \"signal-epg-proxy\"}).encode(\"utf-8\")\n            self.send_response(200)\n            self._cors_headers()\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(body)))\n            self.end_headers()\n            self.wfile.write(body)\n            return\n\n        if parsed.path == \"/fetch\":\n            qs = parse_qs(parsed.query)\n            target = qs.get(\"url\", [None])[0]\n            if not target:\n                self._send_error(400, \"Fehlender 'url'-Parameter.\")\n                return\n            if not (target.startswith(\"http://\") or target.startswith(\"https://\")):\n                self._send_error(400, \"Nur http:// und https:// URLs sind erlaubt.\")\n                return\n            self._proxy_fetch(target)\n            return\n\n        self._send_error(404, \"Unbekannter Pfad. Verfuegbar: /health, /fetch?url=...\")\n\n    def _send_error(self, code, message):\n        body = json.dumps({\"error\": message}).encode(\"utf-8\")\n        self.send_response(code)\n        self._cors_headers()\n        self.send_header(\"Content-Type\", \"application/json\")\n        self.send_header(\"Content-Length\", str(len(body)))\n        self.end_headers()\n        self.wfile.write(body)\n\n    def _proxy_fetch(self, target_url):\n        req = urllib.request.Request(\n            target_url,\n            headers={\n                \"User-Agent\": \"Mozilla/5.0 (compatible; SignalEPGProxy/1.0)\",\n                \"Accept\": \"*/*\",\n            },\n        )\n        try:\n            with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:\n                content_type = resp.headers.get(\"Content-Type\", \"application/octet-stream\")\n                self.send_response(resp.status)\n                self._cors_headers()\n                self.send_header(\"Content-Type\", content_type)\n                self.send_header(\"Transfer-Encoding\", \"chunked\")\n                self.end_headers()\n                total = 0\n                while True:\n                    chunk = resp.read(CHUNK_SIZE)\n                    if not chunk:\n                        break\n                    total += len(chunk)\n                    if total > MAX_BYTES:\n                        sys.stderr.write(\"[proxy] Antwort ueberschreitet \" + str(MAX_BYTES) + \" Bytes, breche ab\\n\")\n                        break\n                    self.wfile.write((\"%X\\r\\n\" % len(chunk)).encode(\"ascii\"))\n                    self.wfile.write(chunk)\n                    self.wfile.write(b\"\\r\\n\")\n                self.wfile.write(b\"0\\r\\n\\r\\n\")\n        except urllib.error.HTTPError as e:\n            self._send_error(502, \"Ziel-Server antwortete mit HTTP \" + str(e.code))\n        except urllib.error.URLError as e:\n            self._send_error(502, \"Verbindung zum Ziel-Server fehlgeschlagen: \" + str(e.reason))\n        except Exception as e:\n            self._send_error(500, \"Unerwarteter Fehler: \" + str(e))\n\n\ndef main():\n    server = ThreadingHTTPServer((HOST, PORT), ProxyHandler)\n    print(\"=\" * 60)\n    print(\" SIGNAL EPG-/Playlist-Proxy laeuft auf http://%s:%d\" % (HOST, PORT))\n    print(\" Dieses Fenster waehrend der Nutzung des Players offen lassen.\")\n    print(\" Beenden mit Strg+C.\")\n    print(\"=\" * 60)\n    try:\n        server.serve_forever()\n    except KeyboardInterrupt:\n        print(\"\\nBeendet.\")\n\n\nif __name__ == \"__main__\":\n    main()\n";
+  const EPG_PROXY_SCRIPT = "#!/usr/bin/env python3\n\"\"\"\nSIGNAL IPTV Player - Local CORS proxy for EPG/playlist URLs\n==================================================================\n\nWhy does this exist?\nSome EPG or playlist servers don't send CORS-allow headers.\nBrowsers then block JavaScript requests from the player page\n(error \"NetworkError\" or \"Failed to fetch\"), even if the server\nitself is reachable.\n\nThis script starts a tiny server ONLY on your own machine\n(127.0.0.1). It accepts requests from the player, fetches the\nrequested URL server-side (without CORS restrictions, since it's\nnot a browser), and sends the response back to the player with\na CORS-allow header.\n\nONLY the URLs you yourself entered in the player as a playlist\nor EPG source are ever fetched. Nothing is stored, logged, or\nsent to any other server.\n\nUsage:\n  1. Python 3 must be installed (no extra packages needed).\n  2. Start this file by double-clicking it, or in a terminal:\n         python3 epg_proxy.py\n  3. In the player, under Settings -> \"Use local proxy\",\n     enable it (the default port 8787 is picked up automatically).\n  4. The window/terminal must stay open while the player is\n     running. Stop it with Ctrl+C or by closing the window.\n\"\"\"\n\nimport sys\nimport json\nimport urllib.request\nimport urllib.error\nfrom http.server import BaseHTTPRequestHandler, ThreadingHTTPServer\nfrom urllib.parse import urlparse, parse_qs\n\nHOST = \"127.0.0.1\"   # Only reachable locally, not visible on the network\nPORT = 8787\nTIMEOUT = 180         # Seconds per request (large EPG files take longer)\nMAX_BYTES = 200 * 1024 * 1024  # 200 MB safety limit per response\nCHUNK_SIZE = 256 * 1024        # stream in chunks instead of reading everything at once\n\n\nclass ProxyHandler(BaseHTTPRequestHandler):\n    server_version = \"SignalEPGProxy/1.0\"\n    protocol_version = \"HTTP/1.1\"  # needed so Transfer-Encoding: chunked works\n\n    def log_message(self, fmt, *args):\n        # More compact, readable console log instead of the default format\n        sys.stderr.write(\"[proxy] \" + (fmt % args) + \"\\n\")\n\n    def _cors_headers(self):\n        self.send_header(\"Access-Control-Allow-Origin\", \"*\")\n        self.send_header(\"Access-Control-Allow-Methods\", \"GET, OPTIONS\")\n        self.send_header(\"Access-Control-Allow-Headers\", \"*\")\n\n    def do_OPTIONS(self):\n        self.send_response(204)\n        self._cors_headers()\n        self.end_headers()\n\n    def do_GET(self):\n        parsed = urlparse(self.path)\n\n        if parsed.path == \"/health\":\n            body = json.dumps({\"status\": \"ok\", \"service\": \"signal-epg-proxy\"}).encode(\"utf-8\")\n            self.send_response(200)\n            self._cors_headers()\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.send_header(\"Content-Length\", str(len(body)))\n            self.end_headers()\n            self.wfile.write(body)\n            return\n\n        if parsed.path == \"/fetch\":\n            qs = parse_qs(parsed.query)\n            target = qs.get(\"url\", [None])[0]\n            if not target:\n                self._send_error(400, \"Missing 'url' parameter.\")\n                return\n            if not (target.startswith(\"http://\") or target.startswith(\"https://\")):\n                self._send_error(400, \"Only http:// and https:// URLs are allowed.\")\n                return\n            self._proxy_fetch(target)\n            return\n\n        self._send_error(404, \"Unknown path. Available: /health, /fetch?url=...\")\n\n    def _send_error(self, code, message):\n        body = json.dumps({\"error\": message}).encode(\"utf-8\")\n        self.send_response(code)\n        self._cors_headers()\n        self.send_header(\"Content-Type\", \"application/json\")\n        self.send_header(\"Content-Length\", str(len(body)))\n        self.end_headers()\n        self.wfile.write(body)\n\n    def _proxy_fetch(self, target_url):\n        req = urllib.request.Request(\n            target_url,\n            headers={\n                \"User-Agent\": \"Mozilla/5.0 (compatible; SignalEPGProxy/1.0)\",\n                \"Accept\": \"*/*\",\n            },\n        )\n        try:\n            with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:\n                content_type = resp.headers.get(\"Content-Type\", \"application/octet-stream\")\n                self.send_response(resp.status)\n                self._cors_headers()\n                self.send_header(\"Content-Type\", content_type)\n                self.send_header(\"Transfer-Encoding\", \"chunked\")\n                self.end_headers()\n                total = 0\n                while True:\n                    chunk = resp.read(CHUNK_SIZE)\n                    if not chunk:\n                        break\n                    total += len(chunk)\n                    if total > MAX_BYTES:\n                        sys.stderr.write(\"[proxy] Response exceeds \" + str(MAX_BYTES) + \" bytes, aborting\\n\")\n                        break\n                    self.wfile.write((\"%X\\r\\n\" % len(chunk)).encode(\"ascii\"))\n                    self.wfile.write(chunk)\n                    self.wfile.write(b\"\\r\\n\")\n                self.wfile.write(b\"0\\r\\n\\r\\n\")\n        except urllib.error.HTTPError as e:\n            self._send_error(502, \"Target server responded with HTTP \" + str(e.code))\n        except urllib.error.URLError as e:\n            self._send_error(502, \"Connection to target server failed: \" + str(e.reason))\n        except Exception as e:\n            self._send_error(500, \"Unexpected error: \" + str(e))\n\n\ndef main():\n    server = ThreadingHTTPServer((HOST, PORT), ProxyHandler)\n    print(\"=\" * 60)\n    print(\" SIGNAL EPG/playlist proxy running at http://%s:%d\" % (HOST, PORT))\n    print(\" Keep this window open while using the player.\")\n    print(\" Stop with Ctrl+C.\")\n    print(\"=\" * 60)\n    try:\n        server.serve_forever()\n    except KeyboardInterrupt:\n        print(\"\\nStopped.\")\n\n\nif __name__ == \"__main__\":\n    main()\n";
 
   // ============================================================
-  // Zustand
+  // State
   // ============================================================
   let state = {
     playlists: [],          // {id,name,sourceType:'url'|'file',sourceUrl,rawText,addedAt}
@@ -1168,31 +1566,31 @@
   let epgByTvgId = {};      // {tvgId: [{start:Date, stop:Date, title}, ...]} for active playlist (session only)
   let epgTimer = null;
 
-  // Erzeugt eine zufällige, eindeutige Playlist-ID.
+  // Generates a random, unique playlist ID.
   function uid(){ return 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
 
   // ============================================================
-  // Netzwerk: direkter Fetch, mit optionalem Fallback über einen
-  // lokalen Proxy (läuft nur auf dem eigenen Rechner, siehe
-  // epg_proxy.py). Das umgeht CORS-Sperren mancher Playlist-/EPG-
-  // Server, ohne dass Daten an fremde Drittserver gehen.
+  // Network: direct fetch, with optional fallback via a
+  // local proxy (runs only on the user's own machine, see
+  // epg_proxy.py). This works around CORS restrictions on some playlist/EPG
+  // servers, without sending data to any third-party server.
   // ============================================================
-  // Baut die lokale Proxy-URL für eine gegebene Ziel-URL.
+  // Builds the local proxy URL for a given target URL.
   function proxyUrlFor(url){
     const port = parseInt(state.settings.proxyPort, 10) || 8787;
     return `http://127.0.0.1:${port}/fetch?url=${encodeURIComponent(url)}`;
   }
 
-  // Baut die URL für den öffentlichen CORS-Proxy (letzter Fallback, z. B. für EPG).
-  // Wird nur verwendet, wenn weder der direkte Zugriff noch der lokale Proxy funktionieren.
+  // Builds the URL for the public CORS proxy (last-resort fallback, e.g. for EPG).
+  // Only used if neither direct access nor the local proxy works.
   function publicCorsProxyUrlFor(url){
     return 'https://cors-anywhere.herokuapp.com/' + url;
   }
 
-  // Lädt eine URL direkt; weicht bei Fehlschlag auf den lokalen Proxy aus, falls aktiviert,
-  // und optional (opts.allowPublicCorsProxy) als letzten Ausweg auf einen öffentlichen
-  // CORS-Proxy (https://cors-anywhere.herokuapp.com/), falls weder der direkte Zugriff
-  // noch der lokale Proxy erreichbar/funktionsfähig sind.
+  // Loads a URL directly; falls back to the local proxy on failure if enabled,
+  // and optionally (opts.allowPublicCorsProxy) as a last resort to a public
+  // CORS proxy (https://cors-anywhere.herokuapp.com/), if neither direct access
+  // nor the local proxy is reachable/working.
   async function smartFetch(url, opts){
     let directErr = null;
     try{
@@ -1218,22 +1616,22 @@
         if (!res.ok) throw new Error('CORS-Proxy-HTTP ' + res.status);
         return res;
       }catch(publicErr){
-        const parts = ['Direkt: ' + directErr.message];
-        if (proxyErr) parts.push('Über lokalen Proxy: ' + proxyErr.message);
-        parts.push('Über öffentlichen CORS-Proxy: ' + publicErr.message);
+        const parts = ['Direct: ' + directErr.message];
+        if (proxyErr) parts.push('Via local proxy: ' + proxyErr.message);
+        parts.push('Via public CORS proxy: ' + publicErr.message);
         throw new Error(parts.join(' | '));
       }
     }
-    if (proxyErr) throw new Error('Direkt: ' + directErr.message + ' | Über lokalen Proxy: ' + proxyErr.message);
+    if (proxyErr) throw new Error('Direct: ' + directErr.message + ' | Via local proxy: ' + proxyErr.message);
     throw directErr;
   }
 
-  // Browser können aus Sicherheitsgründen kein lokales Programm (wie epg_proxy.py)
-  // von sich aus starten - eine HTML-Datei darf keine Programme auf dem Rechner
-  // ausführen. Was die Seite stattdessen tun kann: beim Laden unauffällig prüfen,
-  // ob der Proxy bereits auf 127.0.0.1 läuft, und ihn dann automatisch ohne
-  // zusätzliche Klicks verwenden. Läuft er nicht, macht der Player einfach ohne
-  // ihn weiter - kein Fehler, kein Popup.
+  // For security reasons, browsers cannot launch a local program (like epg_proxy.py)
+  // on their own - an HTML file is not allowed to run programs on the
+  // machine. What the page can do instead: quietly check on load
+  // whether the proxy is already running on 127.0.0.1, and use it automatically
+  // without extra clicks if so. If it's not running, the player simply continues
+  // without it - no error, no popup.
   async function detectLocalProxySilently(){
     const port = parseInt(state.settings.proxyPort, 10) || 8787;
     try{
@@ -1248,14 +1646,14 @@
         if (badge) badge.style.display = 'inline-block';
       }
     }catch(e){
-      // Proxy nicht erreichbar - kein Problem, es wird einfach ohne ihn fortgefahren.
+      // Proxy not reachable - no problem, just continue without it.
     }
   }
 
   // ============================================================
-  // Speicher-Hilfsfunktionen
+  // Storage helper functions
   // ============================================================
-  // Bündelt den aktuellen State zu einem speicherbaren Konfigurationsobjekt.
+  // Bundles the current state into a storable configuration object.
   function buildConfigPayload(){
     return {
       playlists: state.playlists,
@@ -1268,7 +1666,7 @@
     };
   }
 
-  // Übernimmt eine geladene Konfiguration in den State (mit Defaults für fehlende Felder).
+  // Applies a loaded configuration to the state (with defaults for missing fields).
   function applyLoadedConfig(data){
     state.playlists = data.playlists || [];
     state.activePlaylistId = data.activePlaylistId || (state.playlists[0] && state.playlists[0].id) || null;
@@ -1279,7 +1677,7 @@
     state.epgMeta = data.epgMeta || {};
   }
 
-  // Speichert die Konfiguration im Browser-Storage, im localStorage-Fallback und ggf. in der verknüpften Datei.
+  // Saves the configuration to browser storage, the localStorage fallback, and the linked file if any.
   async function persistConfig(){
     const payload = buildConfigPayload();
     if (STORAGE_OK){
@@ -1291,15 +1689,15 @@
     if (configFileHandle){
       try{
         await writeConfigToFile(configFileHandle, payload);
-        updateFileLinkUI('Zuletzt gespeichert: ' + configFileName + ' · ' + new Date().toLocaleTimeString('de-DE'));
+        updateFileLinkUI(t('lastSaved', configFileName, new Date().toLocaleTimeString(currentLocale())));
       }catch(e){
         console.warn('Speichern (Datei) fehlgeschlagen', e);
-        updateFileLinkUI('Datei-Speichern fehlgeschlagen: ' + e.message);
+        updateFileLinkUI(t('fileSaveFailed', e.message));
       }
     }
   }
 
-  // Lädt die Konfiguration aus dem Browser-Storage.
+  // Loads the configuration from browser storage.
   async function loadConfig(){
     if (!STORAGE_OK) return null;
     try{
@@ -1309,15 +1707,15 @@
   }
 
   // ============================================================
-  // Config-Ordner verknüpfen: die Konfigurationsdatei (signal-config.json)
-  // liegt danach als normale Datei in genau dem Ordner, den der Nutzer
-  // wählt - z. B. dem Ordner, in dem diese HTML-Datei liegt.
+  // Link a config folder: the configuration file (signal-config.json)
+  // then lives as a normal file in exactly the folder the user
+  // chooses - e.g. the folder this HTML file is located in.
   // ============================================================
-  // Lässt den Nutzer einen Ordner wählen und verknüpft die Konfigurationsdatei darin.
+  // Lets the user choose a folder and links the configuration file inside it.
   async function chooseConfigFolder(){
     try{
       const dirHandle = await window.showDirectoryPicker({ id: 'signal-config-folder', mode: 'readwrite' });
-      if (!(await verifyPermission(dirHandle, 'readwrite'))) throw new Error('Zugriff verweigert');
+      if (!(await verifyPermission(dirHandle, 'readwrite'))) throw new Error('Access denied');
       const fileHandle = await dirHandle.getFileHandle(CONFIG_FILENAME, { create: true });
       const existing = await readConfigFromFile(fileHandle).catch(() => null);
       configFileHandle = fileHandle;
@@ -1341,14 +1739,14 @@
     }
   }
 
-  // Entfernt die Verknüpfung zur Konfigurationsdatei.
+  // Removes the link to the configuration file.
   async function unlinkConfigFile(){
     configFileHandle = null; configFileName = '';
     try{ await idbDel('configDir'); }catch(e){}
     updateFileLinkUI();
   }
 
-  // Versucht beim Start, den zuvor verknüpften Ordner automatisch wiederzufinden.
+  // Tries to automatically rediscover the previously linked folder on startup.
   async function tryReconnectConfigFile(){
     if (!FS_ACCESS_OK) return null;
     try{
@@ -1366,7 +1764,7 @@
     }catch(e){ console.warn('Config-Ordner Reconnect fehlgeschlagen', e); return null; }
   }
 
-  // Fordert nach Berechtigungsverlust erneut Zugriff auf den zuvor verknüpften Ordner an.
+  // Requests access again after permission was lost, for the previously linked folder.
   async function reconnectConfigFile(){
     if (!pendingDirHandle) return;
     try{
@@ -1388,7 +1786,7 @@
     }catch(e){ console.warn('Reconnect fehlgeschlagen', e); }
   }
 
-  // Aktualisiert die Statusanzeige zur Datei-Verknüpfung in den Einstellungen.
+  // Updates the file-link status display in settings.
   function updateFileLinkUI(lastSavedNote){
     const section = document.getElementById('fileLinkSection');
     const statusEl = document.getElementById('fileLinkStatus');
@@ -1396,32 +1794,32 @@
     const linkBtn = document.getElementById('linkFolderBtn');
     if (!section || !statusEl || !unlinkBtn) return;
     if (!FS_ACCESS_OK){
-      statusEl.textContent = 'Dein Browser unterstützt keine direkte Ordner-Verknüpfung (nur Chrome/Edge). Die Konfiguration wird stattdessen lokal im Browser gespeichert (an diesen Datei-Pfad gebunden) - zusätzlich per Export/Import sicherbar.';
+      statusEl.textContent = t('browserNoFolderLink');
       if (linkBtn) linkBtn.style.display = 'none';
       unlinkBtn.style.display = 'none';
       return;
     }
     if (configFileHandle){
-      statusEl.textContent = lastSavedNote || ('Verknüpft: „' + configFileName + '" im gewählten Ordner - wird bei jeder Änderung automatisch aktualisiert und beim nächsten Start direkt von dort gelesen.');
+      statusEl.textContent = lastSavedNote || t('linkedTo', configFileName);
       unlinkBtn.style.display = '';
     } else {
-      statusEl.textContent = 'Nicht verknüpft - Änderungen werden derzeit nur lokal im Browser gespeichert (an diesen Datei-Pfad gebunden).';
+      statusEl.textContent = t('notLinkedShort');
       unlinkBtn.style.display = 'none';
     }
   }
 
-  // Zeigt das Banner zum erneuten Verbinden der Konfigurationsdatei.
+  // Shows the banner for reconnecting the configuration file.
   function showReconnectBanner(){
     const banner = document.getElementById('fileReconnectBanner');
     if (banner) banner.classList.add('show');
   }
-  // Blendet das Reconnect-Banner aus.
+  // Hides the reconnect banner.
   function hideReconnectBanner(){
     const banner = document.getElementById('fileReconnectBanner');
     if (banner) banner.classList.remove('show');
   }
 
-  // Zeigt beim allerersten Start den Dialog zur Wahl der Speicherart.
+  // Shows the dialog for choosing the storage method on the very first launch.
   function maybeOfferPersistenceSetup(){
     if (!FS_ACCESS_OK) return;
     let skip = false;
@@ -1431,7 +1829,7 @@
     if (modal) modal.classList.add('open');
   }
 
-  // Setzt beim Start automatisch den zuletzt gesehenen Sender fort, falls aktiviert.
+  // Automatically resumes the last-watched channel on startup, if enabled.
   function tryAutoResume(){
     if (!state.settings.restoreLast || !state.lastWatched) return;
     const p = state.playlists.find(x => x.id === state.lastWatched.playlistId);
@@ -1447,18 +1845,18 @@
   // ============================================================
   // Status helpers
   // ============================================================
-  // Zeigt eine Status-/Fehlermeldung in einem Statuselement an.
+  // Shows a status/error message in a status element.
   function showStatus(el, msg, type){
     el.textContent = msg;
     el.className = 'status-msg show ' + (type || 'info');
   }
-  // Blendet eine Statusmeldung wieder aus.
+  // Hides a status message again.
   function clearStatus(el){ el.className = 'status-msg'; }
 
   // ============================================================
   // M3U parsing
   // ============================================================
-  // Parst eine M3U-Playlist in eine Liste von Kanalobjekten.
+  // Parses an M3U playlist into a list of channel objects.
   function parseM3U(text){
     const lines = text.split(/\r?\n/);
     const result = [];
@@ -1469,13 +1867,13 @@
       if (line.startsWith('#EXTINF')){
         const idx = line.indexOf(',');
         const meta = idx >= 0 ? line.substring(8, idx) : '';
-        const name = idx >= 0 ? line.substring(idx+1).trim() : 'Unbenannt';
+        const name = idx >= 0 ? line.substring(idx+1).trim() : t('unnamed');
         const groupMatch = meta.match(/group-title="([^"]*)"/i);
         const logoMatch = meta.match(/tvg-logo="([^"]*)"/i);
         const tvgIdMatch = meta.match(/tvg-id="([^"]*)"/i);
         pending = {
-          name: name || 'Unbenannt',
-          group: groupMatch ? (groupMatch[1] || 'Allgemein') : 'Allgemein',
+          name: name || t('unnamed'),
+          group: groupMatch ? (groupMatch[1] || t('generalGroup')) : t('generalGroup'),
           logo: logoMatch ? logoMatch[1] : null,
           tvgId: tvgIdMatch ? tvgIdMatch[1] : null
         };
@@ -1485,70 +1883,70 @@
           result.push(pending);
           pending = null;
         } else {
-          result.push({ name: 'Kanal ' + (result.length+1), group: 'Allgemein', url: line, tvgId: null, logo: null });
+          result.push({ name: t('channelNum', result.length+1), group: t('generalGroup'), url: line, tvgId: null, logo: null });
         }
       }
     }
     return result;
   }
 
-  // Liefert einen stabilen Schlüssel für einen Kanal (für Favoriten/letzten Sender).
+  // Returns a stable key for a channel (for favorites/last-watched).
   function channelKey(ch){
     return ch.tvgId ? ('id:' + ch.tvgId) : ('nk:' + ch.name + '|' + ch.url);
   }
 
   // ============================================================
-  // Playlist-("Konto")-Verwaltung
+  // Playlist ("account") management
   // ============================================================
-  // Liefert das Playlist-Objekt der aktuell aktiven Playlist.
+  // Returns the playlist object of the currently active playlist.
   function activePlaylist(){
     return state.playlists.find(p => p.id === state.activePlaylistId) || null;
   }
 
-  // Welche Playlists ihr EPG-Unterpanel aufgeklappt haben. Das EPG gehört zu
-  // einer bestimmten Playlist, daher liegen die Bedienelemente direkt unter der
-  // jeweiligen Playlist-Zeile statt in einem globalen Panel.
+  // Which playlists have their EPG sub-panel expanded. The EPG belongs to
+  // a specific playlist, so the controls sit directly under that
+  // playlist's row instead of in a global panel.
   const EPG_EXPANDED_KEY = 'signal_epgExpandedPlaylists';
   let epgExpandedPlaylists = new Set();
   try{ epgExpandedPlaylists = new Set(JSON.parse(localStorage.getItem(EPG_EXPANDED_KEY) || '[]')); }catch(e){}
-  // Speichert, welche Playlists ihr EPG-Panel aufgeklappt haben.
+  // Stores which playlists have their EPG panel expanded.
   function persistEpgExpanded(){
     try{ localStorage.setItem(EPG_EXPANDED_KEY, JSON.stringify(Array.from(epgExpandedPlaylists))); }catch(e){}
   }
 
-  // Rendert die Playlist-Liste inkl. EPG-Unterpanels und verdrahtet deren Events.
+  // Renders the playlist list including EPG sub-panels and wires up their events.
   function renderPlaylistManager(){
     if (!state.playlists.length){
-      pmList.innerHTML = '<div class="pm-empty">Noch keine Playlist gespeichert.</div>';
+      pmList.innerHTML = '<div class="pm-empty">' + t('pmEmpty') + '</div>';
       return;
     }
     pmList.innerHTML = state.playlists.map(p => {
       const active = p.id === state.activePlaylistId ? ' active' : '';
-      const srcLabel = p.sourceType === 'url' ? 'URL' : 'Datei';
+      const srcLabel = p.sourceType === 'url' ? t('urlSrc') : t('fileSrc');
       const epgMeta = state.epgMeta[p.id];
       const epgExpanded = epgExpandedPlaylists.has(p.id);
-      const epgBadge = epgMeta ? '<span class="pm-epg-badge" title="EPG-Quelle hinterlegt">EPG</span>' : '';
+      const epgBadge = epgMeta ? `<span class="pm-epg-badge" title="${t('epgSourceStored')}">EPG</span>` : '';
       const epgUrlVal = epgMeta && epgMeta.sourceType === 'url' ? escapeHtml(epgMeta.sourceUrl || '') : '';
       return `<div class="pm-item-wrap">
         <div class="pm-item${active}" data-id="${p.id}">
-          <button class="pm-epg-toggle" data-action="toggle-epg" data-id="${p.id}" title="EPG-Quelle für diese Playlist" aria-expanded="${epgExpanded}">${epgExpanded ? '▾' : '▸'}</button>
+          <button class="pm-epg-toggle" data-action="toggle-epg" data-id="${p.id}" title="${t('epgSourceForTitle')}" aria-expanded="${epgExpanded}">${epgExpanded ? '▾' : '▸'}</button>
           <span class="pm-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</span>
           ${epgBadge}
           <span class="pm-src">${srcLabel}</span>
           <span class="pm-actions">
-            ${p.sourceType === 'url' ? `<button class="btn-icon" data-action="refresh" data-id="${p.id}" title="Aktualisieren">↻</button>` : ''}
-            <button class="btn-icon" data-action="rename" data-id="${p.id}" title="Umbenennen">✎</button>
-            <button class="btn-icon" data-action="delete" data-id="${p.id}" title="Löschen">🗑</button>
+            ${p.sourceType === 'url' ? `<button class="btn-icon" data-action="refresh" data-id="${p.id}" title="${t('refresh')}">↻</button>` : ''}
+            <button class="btn-icon" data-action="rename" data-id="${p.id}" title="${t('rename')}">✎</button>
+            <button class="btn-icon" data-action="delete" data-id="${p.id}" title="${t('deleteLabel')}">🗑</button>
           </span>
         </div>
         <div class="pm-epg-panel${epgExpanded ? '' : ' collapsed'}" data-id="${p.id}">
-          <div class="label">EPG-Quelle (XMLTV) für „${escapeHtml(p.name)}"</div>
+          <div class="label">${t('epgSourceXmltvFor', escapeHtml(p.name))}</div>
           <div class="url-row">
-            <input type="text" class="pm-epg-url" data-id="${p.id}" placeholder="https://.../epg.xml.gz" value="${epgUrlVal}">
-            <button class="btn-secondary btn-sm pm-epg-load" data-id="${p.id}">Laden</button>
+            <input type="text" class="pm-epg-url" data-id="${p.id}" placeholder="${t('epgUrlPlaceholder')}" value="${epgUrlVal}">
+            <button class="btn-secondary btn-sm pm-epg-load" data-id="${p.id}">${t('load')}</button>
           </div>
           <label class="file-drop pm-epg-drop" data-id="${p.id}">
-            <span class="pm-epg-drop-label">${epgMeta && epgMeta.sourceType === 'file' ? 'Datei hochgeladen (erneut hochladen, falls nötig)' : '.xml / .xml.gz Datei hochladen'}</span>
+            <span class="pm-epg-drop-label">${epgMeta && epgMeta.sourceType === 'file' ? t('fileUploaded') : t('xmlDropLabel')}</span>
             <input type="file" class="pm-epg-file" data-id="${p.id}" accept=".xml,.xml.gz,application/xml">
           </label>
           <div class="status-msg pm-epg-status" data-id="${p.id}"></div>
@@ -1570,7 +1968,7 @@
         e.stopPropagation();
         const p = state.playlists.find(x => x.id === btn.dataset.id);
         if (!p) return;
-        const name = prompt('Neuer Name für diese Playlist:', p.name);
+        const name = prompt(t('promptNewName'), p.name);
         if (name && name.trim()){ p.name = name.trim(); renderPlaylistManager(); persistConfig(); }
       });
     });
@@ -1579,7 +1977,7 @@
         e.stopPropagation();
         const p = state.playlists.find(x => x.id === btn.dataset.id);
         if (!p) return;
-        if (!confirm(`„${p.name}" inklusive Favoriten und Kategorien-Anpassungen wirklich löschen?`)) return;
+        if (!confirm(t('confirmDeletePlaylist', p.name))) return;
         state.playlists = state.playlists.filter(x => x.id !== p.id);
         delete state.overrides[p.id];
         delete state.favorites[p.id];
@@ -1606,9 +2004,9 @@
       });
     });
 
-    // EPG-Quellen-Bedienelemente: jedes Feld/jeder Button ist über data-id an seine
-    // eigene Playlist gebunden, sodass das Laden einer URL/Datei immer nur die
-    // EPG-Quelle dieser einen Playlist aktualisiert.
+    // EPG source controls: each field/button is tied via data-id to its
+    // own playlist, so loading a URL/file always only updates that one
+    // playlist's EPG source.
     pmList.querySelectorAll('.pm-epg-load').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -1616,8 +2014,8 @@
         const urlInput = pmList.querySelector(`.pm-epg-url[data-id="${id}"]`);
         const statusEl = pmList.querySelector(`.pm-epg-status[data-id="${id}"]`);
         const url = urlInput ? urlInput.value.trim() : '';
-        if (!url){ showStatus(statusEl, 'Bitte EPG-URL eingeben.', 'error'); return; }
-        showStatus(statusEl, 'Lade EPG…', 'info');
+        if (!url){ showStatus(statusEl, t('pleaseEnterEpgUrl'), 'error'); return; }
+        showStatus(statusEl, t('loadingEpg'), 'info');
         try{
           const parsed = await fetchEpgUrl(url);
           state.epgMeta[id] = { sourceType: 'url', sourceUrl: url };
@@ -1628,14 +2026,14 @@
             if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
           }
           const count = Object.keys(parsed).length;
-          showStatus(statusEl, `EPG geladen: ${count} Sender mit Programmdaten.`, 'ok');
+          showStatus(statusEl, t('epgLoadedCount', count), 'ok');
           renderPlaylistManager();
         }catch(err){
-          showStatus(statusEl, 'EPG konnte nicht geladen werden (' + err.message + '). Aktiviere den lokalen Proxy in den Einstellungen (empfohlen, damit die Daten auch automatisch aktuell bleiben), oder lade die Datei stattdessen manuell hoch.', 'error');
+          showStatus(statusEl, t('epgLoadFailed', err.message), 'error');
         }
       });
     });
-    // Verarbeitet eine hochgeladene EPG-Datei für eine bestimmte Playlist.
+    // Processes an uploaded EPG file for a specific playlist.
     function handlePmEpgFile(id, file){
       if (!file) return;
       const statusEl = pmList.querySelector(`.pm-epg-status[data-id="${id}"]`);
@@ -1653,10 +2051,10 @@
             if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
           }
           const count = Object.keys(parsed).length;
-          showStatus(statusEl, `EPG geladen: ${count} Sender mit Programmdaten. Hinweis: Datei-EPGs werden aus Speicherplatzgründen nicht dauerhaft gespeichert - beim nächsten Besuch bitte erneut hochladen.`, 'ok');
+          showStatus(statusEl, t('epgLoadedFileNote', count), 'ok');
           renderPlaylistManager();
         }catch(err){
-          showStatus(statusEl, 'EPG-Datei konnte nicht gelesen werden (' + err.message + ').', 'error');
+          showStatus(statusEl, t('epgFileReadFailed', err.message), 'error');
         }
       };
       reader.readAsArrayBuffer(file);
@@ -1681,7 +2079,7 @@
     });
   }
 
-  // Parst die Rohdaten einer Playlist in `channels` und aktualisiert Filter/Liste/EPG.
+  // Parses a playlist's raw data into `channels` and updates the filter/list/EPG.
   function loadActivePlaylistChannels(playlist){
     channels = parseM3U(playlist.rawText);
     buildGroupFilter();
@@ -1689,7 +2087,7 @@
     loadEpgForActivePlaylist();
   }
 
-  // Wechselt die aktive Playlist und aktualisiert Senderliste, Filter und EPG.
+  // Switches the active playlist and updates the channel list, filter, and EPG.
   function switchPlaylist(id, skipRender){
     const p = state.playlists.find(x => x.id === id);
     if (!p) return;
@@ -1702,10 +2100,10 @@
     renderChannelList();
     loadEpgForActivePlaylist();
     persistConfig();
-    if (!skipRender) showStatus(statusMsg, `„${p.name}" aktiv: ${channels.length} Sender.`, 'ok');
+    if (!skipRender) showStatus(statusMsg, t('playlistActive', p.name, channels.length), 'ok');
   }
 
-  // Lädt eine URL-Playlist erneut vom Server.
+  // Reloads a URL playlist from the server.
   async function refreshPlaylist(id){
     const p = state.playlists.find(x => x.id === id);
     if (!p || p.sourceType !== 'url') return;
@@ -1718,20 +2116,20 @@
         renderChannelList();
       }
       persistConfig();
-      showStatus(statusMsg, `„${p.name}" aktualisiert.`, 'ok');
+      showStatus(statusMsg, t('playlistUpdated', p.name), 'ok');
     }catch(err){
-      showStatus(statusMsg, `Aktualisieren fehlgeschlagen (${err.message}).`, 'error');
+      showStatus(statusMsg, t('updateFailed', err.message), 'error');
     }
   }
 
-  // Fügt eine neue Playlist hinzu, macht sie aktiv und speichert den State.
+  // Adds a new playlist, makes it active, and saves the state.
   function addPlaylist(name, sourceType, sourceUrl, rawText){
     const list = parseM3U(rawText);
     if (!list.length){
-      showStatus(statusMsg, 'Keine gültigen Sender in dieser Playlist gefunden.', 'error');
+      showStatus(statusMsg, t('noValidChannels'), 'error');
       return false;
     }
-    const p = { id: uid(), name: name || (sourceType === 'url' ? 'Playlist' : 'Hochgeladene Playlist'), sourceType, sourceUrl: sourceUrl || null, rawText, addedAt: Date.now() };
+    const p = { id: uid(), name: name || (sourceType === 'url' ? t('defaultPlaylistName') : t('defaultUploadedPlaylistName')), sourceType, sourceUrl: sourceUrl || null, rawText, addedAt: Date.now() };
     state.playlists.push(p);
     state.activePlaylistId = p.id;
     channels = list;
@@ -1740,18 +2138,18 @@
     renderPlaylistManager();
     renderChannelList();
     persistConfig();
-    showStatus(statusMsg, `„${p.name}" gespeichert: ${list.length} Sender.`, 'ok');
+    showStatus(statusMsg, t('playlistSaved', p.name, list.length), 'ok');
     sourceForm.classList.add('hidden');
     document.getElementById('playlistName').value = '';
     document.getElementById('playlistUrl').value = '';
-    document.getElementById('dropLabel').textContent = '.m3u / .m3u8-Datei auswählen oder ablegen';
+    document.getElementById('dropLabel').textContent = t('m3uDropLabel');
     return true;
   }
 
-  // Playlist-Liste ein-/ausklappen (Zustand wird gemerkt)
+  // Collapse/expand the playlist list (state is remembered)
   let pmCollapsed = false;
   try{ pmCollapsed = localStorage.getItem('signalPmCollapsed') === '1'; }catch(e){}
-  // Wendet den Ein-/Ausklapp-Zustand der Playlist-Liste auf die UI an.
+  // Applies the playlist list's collapsed/expanded state to the UI.
   function applyPmCollapsed(){
     pmList.classList.toggle('collapsed', pmCollapsed);
     pmHeader.classList.toggle('collapsed', pmCollapsed);
@@ -1776,30 +2174,30 @@
   document.getElementById('loadUrlBtn').addEventListener('click', async () => {
     const url = document.getElementById('playlistUrl').value.trim();
     const nameInput = document.getElementById('playlistName').value.trim();
-    if (!url){ showStatus(statusMsg, 'Bitte zuerst eine Playlist-URL eingeben.', 'error'); return; }
-    showStatus(statusMsg, 'Lade Playlist…', 'info');
+    if (!url){ showStatus(statusMsg, t('pleaseEnterPlaylistUrl'), 'error'); return; }
+    showStatus(statusMsg, t('loadingPlaylist'), 'info');
     try{
       const res = await smartFetch(url);
       const text = await res.text();
       let name = nameInput;
-      if (!name){ try{ name = new URL(url).hostname; }catch(e){ name = 'Playlist'; } }
+      if (!name){ try{ name = new URL(url).hostname; }catch(e){ name = t('defaultPlaylistName'); } }
       addPlaylist(name, 'url', url, text);
     }catch(err){
-      showStatus(statusMsg, 'Playlist konnte nicht geladen werden (' + err.message + '). Oft blockiert der Server browserseitige Anfragen (CORS) - aktiviere den lokalen Proxy in den Einstellungen, oder lade die Datei stattdessen herunter und hoch.', 'error');
+      showStatus(statusMsg, t('playlistLoadFailed', err.message), 'error');
     }
   });
 
   const dropZone = document.getElementById('dropZone');
   const fileInput = document.getElementById('fileInput');
   const dropLabel = document.getElementById('dropLabel');
-  // Liest eine hochgeladene M3U-Datei ein und legt sie als neue Playlist an.
+  // Reads an uploaded M3U file and creates it as a new playlist.
   function handleFile(file){
     if (!file) return;
     dropLabel.textContent = file.name;
     const nameInput = document.getElementById('playlistName').value.trim();
     const reader = new FileReader();
     reader.onload = () => addPlaylist(nameInput || file.name.replace(/\.[^.]+$/, ''), 'file', null, reader.result);
-    reader.onerror = () => showStatus(statusMsg, 'Datei konnte nicht gelesen werden.', 'error');
+    reader.onerror = () => showStatus(statusMsg, t('fileReadFailed'), 'error');
     reader.readAsText(file);
   }
   fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
@@ -1808,9 +2206,9 @@
   dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
 
   // ============================================================
-  // Kategorien-Anpassungen (umbenennen / ausblenden) - rühren rawText nie an
+  // Category customizations (rename / hide) - never touch rawText
   // ============================================================
-  // Liefert (und initialisiert bei Bedarf) die Kategorien-Anpassungen der aktiven Playlist.
+  // Returns (and initializes if needed) the category customizations of the active playlist.
   function getOverrides(){
     const id = state.activePlaylistId;
     if (!id) return { renames: {}, deleted: [] };
@@ -1818,19 +2216,19 @@
     return state.overrides[id];
   }
 
-  // Liefert den ggf. umbenannten Anzeigenamen einer Kategorie.
+  // Returns a category's display name, renamed if applicable.
   function displayGroupName(rawGroup){
     const ov = getOverrides();
     return ov.renames[rawGroup] || rawGroup;
   }
 
-  // Baut das Kategorie-Dropdown aus den Kanälen der aktiven Playlist.
+  // Builds the category dropdown from the active playlist's channels.
   function buildGroupFilter(){
     const ov = getOverrides();
     const groups = Array.from(new Set(channels.map(c => c.group)))
       .filter(g => !ov.deleted.includes(g))
       .sort((a,b) => displayGroupName(a).localeCompare(displayGroupName(b)));
-    groupFilter.innerHTML = '<option value="">Alle Kategorien</option>' +
+    groupFilter.innerHTML = `<option value="">${t('allCategories')}</option>` +
       groups.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(displayGroupName(g))}</option>`).join('');
   }
 
@@ -1839,9 +2237,9 @@
   const groupRows = document.getElementById('groupRows');
   let pendingGroupEdits = null;
 
-  // Öffnet den Kategorien-Dialog mit einer Arbeitskopie der Kategorien.
+  // Opens the categories dialog with a working copy of the categories.
   function openGroupsModal(){
-    if (!state.activePlaylistId){ alert('Bitte zuerst eine Playlist auswählen.'); return; }
+    if (!state.activePlaylistId){ alert(t('pleaseSelectPlaylistFirst')); return; }
     const ov = getOverrides();
     const rawGroups = Array.from(new Set(channels.map(c => c.group))).sort();
     pendingGroupEdits = rawGroups.map(g => ({
@@ -1852,13 +2250,13 @@
     renderGroupRows();
     groupsModal.classList.add('open');
   }
-  // Rendert die Zeilen im Kategorien-Dialog.
+  // Renders the rows in the categories dialog.
   function renderGroupRows(){
     groupRows.innerHTML = pendingGroupEdits.map((g, i) => `
       <div class="group-row${g.deleted ? ' deleted' : ''}">
         <input type="text" data-i="${i}" class="group-name-input" value="${escapeHtml(g.name)}">
-        <button class="btn-ghost btn-sm" data-i="${i}" data-act="toggle">${g.deleted ? 'Wiederherstellen' : 'Ausblenden'}</button>
-      </div>`).join('') || '<div class="sec-desc">Keine Kategorien in dieser Playlist.</div>';
+        <button class="btn-ghost btn-sm" data-i="${i}" data-act="toggle">${g.deleted ? t('restore') : t('hideCat')}</button>
+      </div>`).join('') || `<div class="sec-desc">${t('noCategoriesInPlaylist')}</div>`;
 
     groupRows.querySelectorAll('.group-name-input').forEach(inp => {
       inp.addEventListener('input', () => { pendingGroupEdits[inp.dataset.i].name = inp.value; });
@@ -1886,16 +2284,16 @@
   });
 
   // ============================================================
-  // Favoriten
+  // Favorites
   // ============================================================
-  // Liefert die Favoriten-Kanalschlüssel der aktiven Playlist als Set.
+  // Returns the active playlist's favorite channel keys as a Set.
   function getFavSet(){
     const id = state.activePlaylistId;
     if (!id) return new Set();
     if (!state.favorites[id]) state.favorites[id] = [];
     return new Set(state.favorites[id]);
   }
-  // Fügt einen Kanal zu den Favoriten hinzu oder entfernt ihn.
+  // Adds a channel to favorites or removes it.
   function toggleFavorite(ch){
     const id = state.activePlaylistId;
     if (!id) return;
@@ -1913,20 +2311,20 @@
       activeTab = btn.dataset.tab;
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
       groupFilter.disabled = (activeTab === 'fav');
-      groupFilter.title = activeTab === 'fav' ? 'In den Favoriten werden immer alle Kategorien angezeigt.' : '';
+      groupFilter.title = activeTab === 'fav' ? t('favOnlyAllCategoriesTitle') : '';
       renderChannelList();
     });
   });
 
   // ============================================================
-  // Rendering der Senderliste
+  // Rendering the channel list
   // ============================================================
-  // Escaped Sonderzeichen für die sichere Einbettung in HTML.
+  // Escapes special characters for safe embedding in HTML.
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  // Liefert aktuelle und nächste Sendung für einen Kanal, falls EPG-Daten vorliegen.
+  // Returns the current and next program for a channel, if EPG data is available.
   function epgInfoFor(ch){
     if (!ch.tvgId || !epgByTvgId[ch.tvgId]) return null;
     const list = epgByTvgId[ch.tvgId];
@@ -1937,7 +2335,7 @@
     return { cur, next };
   }
 
-  // Baut das kleine EPG-Snippet (Jetzt/Danach) für die Senderliste.
+  // Builds the small EPG snippet (now/next) for the channel list.
   function epgSnippetFor(ch){
     const info = epgInfoFor(ch);
     if (!info) return '';
@@ -1945,16 +2343,16 @@
     let html = '';
     if (info.cur){
       const remMin = Math.max(0, Math.round((info.cur.stop - now) / 60000));
-      html += `<div class="ch-epg ch-epg-now"><span class="now">Jetzt: ${escapeHtml(info.cur.title)}</span> · noch ${remMin} Min</div>`;
+      html += `<div class="ch-epg ch-epg-now"><span class="now">${t('epgNowLabel')}: ${escapeHtml(info.cur.title)}</span> · ${t('epgMinLeft', remMin)}</div>`;
     }
     if (info.next){
-      const time = info.next.start.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
-      html += `<div class="ch-epg ch-epg-next">Danach ${time}: ${escapeHtml(info.next.title)}</div>`;
+      const time = info.next.start.toLocaleTimeString(currentLocale(), {hour:'2-digit', minute:'2-digit'});
+      html += `<div class="ch-epg ch-epg-next">${t('epgAfter', time, escapeHtml(info.next.title))}</div>`;
     }
     return html;
   }
 
-  // Rendert die gefilterte, gruppierte Senderliste.
+  // Renders the filtered, grouped channel list.
   function renderChannelList(){
     const ov = getOverrides();
     const groupVal = groupFilter.value;
@@ -1969,12 +2367,12 @@
     }
     const filtered = base.filter(c => (activeTab === 'fav' || !groupVal || c.group === groupVal) && (!q || c.name.toLowerCase().includes(q)));
 
-    channelCount.textContent = filtered.length + (activeTab === 'fav' ? ' Favoriten' : ' von ' + channels.length + ' Sendern');
+    channelCount.textContent = activeTab === 'fav' ? t('channelCountFav', filtered.length) : t('channelCountOf', filtered.length, channels.length);
 
     if (!filtered.length){
       channelList.innerHTML = activeTab === 'fav'
-        ? '<div class="empty-list">Noch keine Favoriten.<br>Tippe auf den Stern bei einem Sender, um ihn hier anzupinnen.</div>'
-        : '<div class="empty-list">Keine Sender gefunden.<br>Suche oder Filter anpassen.</div>';
+        ? `<div class="empty-list">${t('noFavYet')}</div>`
+        : `<div class="empty-list">${t('noChannelsFound')}</div>`;
       return;
     }
 
@@ -2002,7 +2400,7 @@
             <div class="ch-name">${escapeHtml(c.name)}</div>
             ${epgLine}
           </span>
-          <button class="fav-btn${isFav ? ' on' : ''}" data-fav-idx="${c._idx}" title="Favorit">${isFav ? '★' : '☆'}</button>
+          <button class="fav-btn${isFav ? ' on' : ''}" data-fav-idx="${c._idx}" title="${t('favoriteTitle')}">${isFav ? '★' : '☆'}</button>
         </div>`;
       }
     }
@@ -2028,16 +2426,16 @@
   searchInput.addEventListener('input', renderChannelList);
 
   // ============================================================
-  // Bildrauschen-/Sendersuchlauf-Effekt
+  // Static/channel-tuning noise effect
   // ============================================================
-  // Zeigt kurz einen Bildrauschen-Effekt beim Senderwechsel.
+  // Briefly shows a static-noise effect when switching channels.
   function playStaticBurst(durationMs){
     tuningOverlay.classList.add('on');
     const ctx = staticCanvas.getContext('2d');
     const w = staticCanvas.width = staticCanvas.clientWidth || 640;
     const h = staticCanvas.height = staticCanvas.clientHeight || 360;
     const start = performance.now();
-    // Zeichnet einen einzelnen Bildrauschen-Frame.
+    // Draws a single static-noise frame.
     function frame(now){
       const imgData = ctx.createImageData(w, h);
       const buf = imgData.data;
@@ -2053,17 +2451,17 @@
   }
 
   // ============================================================
-  // Wiedergabe
+  // Playback
   // ============================================================
-  // Zerstört die aktuelle hls.js-Instanz, falls vorhanden.
+  // Destroys the current hls.js instance, if any.
   function destroyHls(){ if (hls){ hls.destroy(); hls = null; } }
-  // Setzt Audio-/Untertitel-Auswahl auf den deaktivierten Ausgangszustand zurück.
+  // Resets the audio/subtitle selection to the disabled initial state.
   function resetTrackSelectors(){
-    audioTrackSelect.disabled = true; audioTrackSelect.innerHTML = '<option>Standard</option>';
-    subtitleTrackSelect.disabled = true; subtitleTrackSelect.innerHTML = '<option>Keine</option>';
+    audioTrackSelect.disabled = true; audioTrackSelect.innerHTML = `<option>${t('standard')}</option>`;
+    subtitleTrackSelect.disabled = true; subtitleTrackSelect.innerHTML = `<option>${t('none')}</option>`;
   }
 
-  // Stoppt die Wiedergabe und setzt Player-UI zurück.
+  // Stops playback and resets the player UI.
   function stopPlayback(){
     destroyHls();
     video.pause();
@@ -2072,11 +2470,11 @@
     stageEmpty.style.display = 'flex';
     channelHud.classList.remove('show');
     resetTrackSelectors();
-    playerHint.textContent = 'Bereit.';
+    playerHint.textContent = t('ready');
     footerEpg.classList.remove('has-data');
   }
 
-  // Startet die Wiedergabe eines Kanals (HLS oder nativ).
+  // Starts playback of a channel (HLS or native).
   function playChannel(idx){
     const ch = channels[idx];
     if (!ch) return;
@@ -2086,7 +2484,7 @@
 
     stageEmpty.style.display = 'none';
     playStaticBurst(380);
-    playerHint.textContent = 'Verbinde mit Stream…';
+    playerHint.textContent = t('connectingToStream');
     clearStatus(statusMsg);
 
     hudNum.textContent = String(idx+1).padStart(2,'0');
@@ -2116,37 +2514,37 @@
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch(()=>{});
-        playerHint.textContent = 'Wiedergabe: ' + ch.name;
+        playerHint.textContent = t('playbackOf', ch.name);
       });
       hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, () => populateAudioTracks());
       hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => populateSubtitleTracks());
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal){
-          playerHint.textContent = 'Fehler beim Abspielen dieses Senders.';
-          showStatus(statusMsg, 'Stream-Fehler: ' + (data.details || 'unbekannt') + '.', 'error');
+          playerHint.textContent = t('playbackErrorHint');
+          showStatus(statusMsg, t('streamError', data.details || t('unknown')), 'error');
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')){
       video.src = url;
       video.play().catch(()=>{});
-      playerHint.textContent = 'Wiedergabe: ' + ch.name + ' (native HLS - keine Mehrfachspuren verfügbar)';
+      playerHint.textContent = t('playbackNativeNote', ch.name);
     } else {
       video.src = url;
-      video.play().catch(()=>{ showStatus(statusMsg, 'Wiedergabe konnte nicht automatisch gestartet werden. Play-Button nutzen.', 'info'); });
-      playerHint.textContent = 'Wiedergabe: ' + ch.name;
+      video.play().catch(()=>{ showStatus(statusMsg, t('playbackNotAutoStarted'), 'info'); });
+      playerHint.textContent = t('playbackOf', ch.name);
     }
   }
-  video.addEventListener('error', () => { playerHint.textContent = 'Stream nicht abspielbar.'; });
+  video.addEventListener('error', () => { playerHint.textContent = t('streamNotPlayable'); });
 
-  // Füllt die Audiospur-Auswahl aus den verfügbaren HLS-Audiospuren.
+  // Populates the audio track selector from the available HLS audio tracks.
   function populateAudioTracks(){
     if (!hls || !hls.audioTracks || !hls.audioTracks.length){
-      audioTrackSelect.disabled = true; audioTrackSelect.innerHTML = '<option>Standard</option>';
+      audioTrackSelect.disabled = true; audioTrackSelect.innerHTML = `<option>${t('standard')}</option>`;
       return;
     }
     audioTrackSelect.disabled = false;
-    audioTrackSelect.innerHTML = hls.audioTracks.map((t, i) =>
-      `<option value="${i}">${escapeHtml(t.name || t.lang || ('Spur ' + (i+1)))}</option>`
+    audioTrackSelect.innerHTML = hls.audioTracks.map((tr, i) =>
+      `<option value="${i}">${escapeHtml(tr.name || tr.lang || t('trackNumber', i+1))}</option>`
     ).join('');
     const pref = state.settings.audioLang.trim().toLowerCase();
     if (pref){
@@ -2154,15 +2552,15 @@
       if (match >= 0){ hls.audioTrack = match; audioTrackSelect.value = String(match); }
     }
   }
-  // Füllt die Untertitel-Auswahl aus den verfügbaren HLS-Untertitelspuren.
+  // Populates the subtitle selector from the available HLS subtitle tracks.
   function populateSubtitleTracks(){
     if (!hls || !hls.subtitleTracks || !hls.subtitleTracks.length){
-      subtitleTrackSelect.disabled = true; subtitleTrackSelect.innerHTML = '<option>Keine</option>';
+      subtitleTrackSelect.disabled = true; subtitleTrackSelect.innerHTML = `<option>${t('none')}</option>`;
       return;
     }
     subtitleTrackSelect.disabled = false;
-    subtitleTrackSelect.innerHTML = '<option value="-1">Aus</option>' + hls.subtitleTracks.map((t, i) =>
-      `<option value="${i}">${escapeHtml(t.name || t.lang || ('Spur ' + (i+1)))}</option>`
+    subtitleTrackSelect.innerHTML = `<option value="-1">${t('off')}</option>` + hls.subtitleTracks.map((tr, i) =>
+      `<option value="${i}">${escapeHtml(tr.name || tr.lang || t('trackNumber', i+1))}</option>`
     ).join('');
     if (state.settings.subtitlesDefault){
       const pref = state.settings.subtitleLang.trim().toLowerCase();
@@ -2184,9 +2582,9 @@
   });
 
   // ============================================================
-  // EPG (XMLTV, mit Gzip-Unterstützung)
+  // EPG (XMLTV, with gzip support)
   // ============================================================
-  // Parst einen XMLTV-Zeitstempel inkl. Zeitzonen-Offset in ein Date.
+  // Parses an XMLTV timestamp, including timezone offset, into a Date.
   function parseXmltvOffset(ts){
     // Format: YYYYMMDDHHMMSS [+-]HHMM
     const m = ts.trim().match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})\s*([+-]\d{4})?$/);
@@ -2201,7 +2599,7 @@
     return new Date(ms);
   }
 
-  // Parst XMLTV-Daten in eine Sendungsliste je Sender-ID.
+  // Parses XMLTV data into a program list per channel ID.
   function parseXmltv(xmlText){
     const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
     const progNodes = doc.getElementsByTagName('programme');
@@ -2223,15 +2621,15 @@
     return map;
   }
 
-  // Erkennt anhand der Magic Bytes, ob Daten gzip-komprimiert sind.
+  // Detects from the magic bytes whether data is gzip-compressed.
   function isGzip(bytes){ return bytes.length > 2 && bytes[0] === 0x1f && bytes[1] === 0x8b; }
 
-  // Entpackt (falls nötig) und parst EPG-Rohdaten zu XMLTV-Sendungen.
+  // Decompresses (if needed) and parses raw EPG data into XMLTV programs.
   async function loadEpgFromArrayBuffer(buf){
     const bytes = new Uint8Array(buf);
     let text;
     if (isGzip(bytes)){
-      if (!window.pako) throw new Error('Gzip-Unterstützung nicht verfügbar');
+      if (!window.pako) throw new Error(t('gzipNotAvailable'));
       text = pako.inflate(bytes, { to: 'string' });
     } else {
       text = new TextDecoder('utf-8').decode(bytes);
@@ -2239,21 +2637,21 @@
     return parseXmltv(text);
   }
 
-  // Lädt und parst eine EPG-URL. Fallback-Kette: 1) direkter Zugriff,
-  // 2) lokaler Proxy (falls aktiviert), 3) öffentlicher CORS-Proxy.
+  // Loads and parses an EPG URL. Fallback chain: 1) direct access,
+  // 2) local proxy (if enabled), 3) public CORS proxy.
   async function fetchEpgUrl(url){
     const res = await smartFetch(url, { referrerPolicy: 'no-referrer', allowPublicCorsProxy: true });
     const buf = await res.arrayBuffer();
     return loadEpgFromArrayBuffer(buf);
   }
 
-  // Lädt das EPG in regelmäßigen Abständen automatisch neu (Standard:
-  // alle 4 Stunden), damit die Programmdaten aktuell bleiben, ohne dass
-  // manuell etwas heruntergeladen werden muss. Funktioniert direkt, wenn
-  // der EPG-Server CORS erlaubt, oder über den lokalen Proxy (siehe
-  // Einstellungen), falls nicht.
+  // Automatically reloads the EPG at regular intervals (default:
+  // every 4 hours), so program data stays current without requiring
+  // a manual download. Works directly if
+  // the EPG server allows CORS, or via the local proxy (see
+  // settings) if not.
   let epgRefetchTimer = null;
-  // Richtet die periodische automatische EPG-Aktualisierung ein.
+  // Sets up periodic automatic EPG refreshing.
   function scheduleEpgAutoRefresh(){
     if (epgRefetchTimer) clearInterval(epgRefetchTimer);
     const hours = Math.max(1, parseInt(state.settings.epgRefreshHours, 10) || 4);
@@ -2264,14 +2662,14 @@
     }, hours * 3600000);
   }
 
-  // Lädt das EPG für die aktive Playlist, falls eine URL-Quelle hinterlegt ist.
+  // Loads the EPG for the active playlist, if a URL source is configured.
   async function loadEpgForActivePlaylist(){
     epgByTvgId = {};
     const id = state.activePlaylistId;
     const meta = id ? state.epgMeta[id] : null;
     if (!meta || meta.sourceType !== 'url') { renderChannelList(); return; }
     try{
-      showStatus(statusMsg, 'Lade EPG…', 'info');
+      showStatus(statusMsg, t('loadingEpg'), 'info');
       epgByTvgId = await fetchEpgUrl(meta.sourceUrl);
       renderChannelList();
       if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
@@ -2280,10 +2678,10 @@
     }
   }
 
-  // Rundet Millisekunden auf ganze Minuten.
+  // Rounds milliseconds to whole minutes.
   function formatMin(ms){ return Math.max(0, Math.round(ms / 60000)); }
 
-  // Aktualisiert HUD- und Footer-Anzeige mit aktuellem und nächstem Programm.
+  // Updates the HUD and footer display with the current and next program.
   function updateHudEpg(ch){
     if (!ch || !ch.tvgId || !epgByTvgId[ch.tvgId]){
       hudEpg.classList.remove('has-data');
@@ -2303,32 +2701,32 @@
     const elapsedMs = now - cur.start;
     const pct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
 
-    // Kurzzeitiges HUD-Overlay (wird nach Senderwechsel für ein paar Sekunden angezeigt)
+    // Short-lived HUD overlay (shown for a few seconds after switching channels)
     hudEpg.classList.add('has-data');
     hudProgressBar.style.width = pct.toFixed(1) + '%';
     hudCurrentTitle.textContent = cur.title;
-    hudRemaining.textContent = 'noch ' + formatMin(cur.stop - now) + ' Min';
-    hudNext.textContent = next ? ('Danach: ' + next.title + ' um ' + next.start.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})) : '';
+    hudRemaining.textContent = t('epgMinLeft', formatMin(cur.stop - now));
+    hudNext.textContent = next ? t('epgAfter', next.start.toLocaleTimeString(currentLocale(), {hour:'2-digit', minute:'2-digit'}), next.title) : '';
 
-    // Dauerhafte Footer-Anzeige: vollständige Titel, genaue verstrichene/Gesamtzeit,
-    // bleibt permanent sichtbar (im Gegensatz zur nativen Seek-Leiste des Browsers,
-    // die bei Livestreams nur wenige Sekunden Puffer widerspiegelt).
+    // Persistent footer display: full titles, exact elapsed/total time,
+    // stays permanently visible (unlike the browser's native seek bar,
+    // which for livestreams only reflects a few seconds of buffer).
     footerEpg.classList.add('has-data');
     footerProgressBar.style.width = pct.toFixed(1) + '%';
-    footerProgressTime.textContent = formatMin(elapsedMs) + ' / ' + formatMin(totalMs) + ' Min (' + pct.toFixed(0) + '%)';
-    footerEpgNow.innerHTML = 'Jetzt: <b>' + escapeHtml(cur.title) + '</b>';
+    footerProgressTime.textContent = t('footerProgressTime', formatMin(elapsedMs), formatMin(totalMs), pct.toFixed(0));
+    footerEpgNow.innerHTML = t('epgNowLabel') + ': <b>' + escapeHtml(cur.title) + '</b>';
     footerEpgNext.textContent = next
-      ? ('Danach (' + next.start.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + '): ' + next.title)
+      ? t('epgAfter', next.start.toLocaleTimeString(currentLocale(), {hour:'2-digit', minute:'2-digit'}), next.title)
       : '';
   }
 
-  // Merkt sich den zuletzt angezeigten EPG-Text aller Sender, damit die
-  // (teure) Neuzeichnung der Senderliste nur passiert, wenn sich an den
-  // sichtbaren EPG-Texten wirklich etwas geändert hat.
+  // Remembers the last displayed EPG text for all channels, so that the
+  // (expensive) re-rendering of the channel list only happens when the
+  // visible EPG texts have actually changed.
   let lastEpgSnapshot = '';
 
-  // Prüft, ob sich der EPG-Text seit dem letzten Rendern geändert hat, und
-  // rendert die Senderliste nur dann neu (statt bei jedem Tick).
+  // Checks whether the EPG text has changed since the last render, and
+  // only re-renders the channel list in that case (instead of on every tick).
   function renderChannelListIfEpgChanged(){
     const snapshot = channels.map(c => epgSnippetFor(c)).join('|');
     if (snapshot !== lastEpgSnapshot){
@@ -2339,23 +2737,23 @@
 
   if (epgTimer) clearInterval(epgTimer);
   epgTimer = setInterval(() => {
-    // Pausiert komplett, solange der Tab im Hintergrund ist – kein Grund,
-    // Logos/Liste neu zu rendern, wenn ohnehin niemand hinschaut. Das war
-    // die Hauptursache für die unnötige CPU-Last im Hintergrund-Tab.
+    // Pauses entirely while the tab is in the background - no reason
+    // to re-render logos/list when nobody is looking anyway. This was
+    // the main cause of unnecessary CPU load in background tabs.
     if (document.hidden) return;
 
-    // Aktualisiert nur die HUD-/Footer-Textfelder (reine Textänderung, kein DOM-Rebuild, keine Logos betroffen).
+    // Only updates the HUD/footer text fields (plain text change, no DOM rebuild, logos unaffected).
     if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
 
-    // renderChannelList() baut die komplette Liste inkl. aller <img class="ch-logo">
-    // neu auf (destroy+recreate), was Browser-Last durch unnötiges Neuladen/
-    // Neudekodieren der Logos verursacht. Deshalb nur aufrufen, wenn sich der
-    // EPG-Text für die Sender tatsächlich geändert hat.
+    // renderChannelList() rebuilds the entire list including all <img class="ch-logo">
+    // elements (destroy+recreate), which causes browser load through unnecessary
+    // reloading/redecoding of logos. So only call it when the
+    // EPG text for the channels has actually changed.
     renderChannelListIfEpgChanged();
   }, 30000);
 
-  // Wird der Tab wieder sichtbar, einmal sofort aktualisieren, statt bis zu
-  // 30s auf den nächsten Tick zu warten.
+  // When the tab becomes visible again, refresh immediately once instead of waiting
+  // up to 30s for the next tick.
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden){
       if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
@@ -2364,11 +2762,11 @@
   });
 
   // ============================================================
-  // EPG-Programmvorschau ("Teletext"-Popup) - zeigt für einen
-  // wählbaren Sender die komplette geladene Vorschau (nicht nur
-  // die aktuell laufende Sendung).
+  // EPG program guide ("teletext" popup) - shows the complete loaded
+  // guide for a selectable channel (not just
+  // the program currently airing).
   // ============================================================
-  // Liefert alle Kanäle, für die EPG-Daten geladen sind.
+  // Returns all channels for which EPG data is loaded.
   function guideChannelsWithEpg(){
     const seen = new Set();
     const list = [];
@@ -2381,11 +2779,11 @@
     return list;
   }
 
-  // Füllt die Sender-Auswahl im Programmvorschau-Dialog.
+  // Populates the channel selector in the program guide dialog.
   function populateEpgGuideChannelSelect(){
     const list = guideChannelsWithEpg();
     if (!list.length){
-      epgGuideChannelSelect.innerHTML = '<option value="">Keine Programmdaten geladen</option>';
+      epgGuideChannelSelect.innerHTML = `<option value="">${t('noProgramDataLoaded')}</option>`;
       epgGuideChannelSelect.disabled = true;
       return;
     }
@@ -2398,22 +2796,22 @@
     ).join('');
   }
 
-  // Rendert einen einzelnen Sendungseintrag in der Programmvorschau.
+  // Renders a single program entry in the program guide.
   function renderEpgGuideItem(p, opts){
     opts = opts || {};
     const now = new Date();
     const isNow = p.start <= now && p.stop > now;
-    const time = p.start.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+    const time = p.start.toLocaleTimeString(currentLocale(), { hour:'2-digit', minute:'2-digit' });
     return `<div class="epg-guide-item${isNow ? ' now' : ''}">
         <span class="eg-time">${time}</span>
         ${opts.channelName ? `<span class="eg-channel">${escapeHtml(opts.channelName)}</span>` : ''}
         <span class="eg-title">${escapeHtml(p.title)}</span>
-        ${isNow ? '<span class="eg-now-tag">JETZT</span>' : ''}
+        ${isNow ? `<span class="eg-now-tag">${t('nowTag')}</span>` : ''}
       </div>`;
   }
 
-  // Durchsucht die Sendungstitel aller Sender mit geladenen Programmdaten
-  // (nicht nur den aktuell im Dropdown gewählten Sender).
+  // Searches program titles across all channels with loaded program data
+  // (not just the channel currently selected in the dropdown).
   function renderEpgSearchResults(query){
     const q = query.trim().toLowerCase();
     const now = new Date();
@@ -2421,20 +2819,20 @@
     for (const ch of guideChannelsWithEpg()){
       const list = epgByTvgId[ch.tvgId] || [];
       for (const p of list){
-        if (p.stop <= now) continue; // vergangene Sendungen ausblenden
+        if (p.stop <= now) continue; // hide past programs
         if (p.title.toLowerCase().includes(q)) results.push({ p, channelName: ch.name });
       }
     }
     results.sort((a, b) => a.p.start - b.p.start);
     const limited = results.slice(0, 200);
     if (!limited.length){
-      epgGuideList.innerHTML = '<div class="epg-guide-empty">Keine Sendungen gefunden.</div>';
+      epgGuideList.innerHTML = `<div class="epg-guide-empty">${t('noProgramsFound')}</div>`;
       return;
     }
     let html = '';
     let lastDay = '';
     for (const { p, channelName } of limited){
-      const dayKey = p.start.toLocaleDateString('de-DE', { weekday:'short', day:'2-digit', month:'2-digit' });
+      const dayKey = p.start.toLocaleDateString(currentLocale(), { weekday:'short', day:'2-digit', month:'2-digit' });
       if (dayKey !== lastDay){
         html += `<div class="epg-guide-daysep">${escapeHtml(dayKey)}</div>`;
         lastDay = dayKey;
@@ -2444,7 +2842,7 @@
     epgGuideList.innerHTML = html;
   }
 
-  // Rendert die Programmvorschau (Suchergebnisse oder Sender-Zeitplan).
+  // Renders the program guide (search results or channel schedule).
   function renderEpgGuideList(){
     const query = epgGuideSearchInput.value;
     if (query.trim()){
@@ -2454,19 +2852,19 @@
     const tvgId = epgGuideChannelSelect.value;
     const list = tvgId ? (epgByTvgId[tvgId] || []) : [];
     if (!list.length){
-      epgGuideList.innerHTML = '<div class="epg-guide-empty">Keine Programmdaten für diesen Sender.</div>';
+      epgGuideList.innerHTML = `<div class="epg-guide-empty">${t('noProgramDataForChannel')}</div>`;
       return;
     }
     const now = new Date();
     const upcoming = list.filter(p => p.stop > now).slice(0, 100);
     if (!upcoming.length){
-      epgGuideList.innerHTML = '<div class="epg-guide-empty">Keine anstehenden Sendungen in den geladenen Programmdaten.</div>';
+      epgGuideList.innerHTML = `<div class="epg-guide-empty">${t('noUpcomingPrograms')}</div>`;
       return;
     }
     let html = '';
     let lastDay = '';
     for (const p of upcoming){
-      const dayKey = p.start.toLocaleDateString('de-DE', { weekday:'short', day:'2-digit', month:'2-digit' });
+      const dayKey = p.start.toLocaleDateString(currentLocale(), { weekday:'short', day:'2-digit', month:'2-digit' });
       if (dayKey !== lastDay){
         html += `<div class="epg-guide-daysep">${escapeHtml(dayKey)}</div>`;
         lastDay = dayKey;
@@ -2476,7 +2874,7 @@
     epgGuideList.innerHTML = html;
   }
 
-  // Öffnet den Programmvorschau-Dialog.
+  // Opens the program guide dialog.
   function openEpgGuide(){
     epgGuideSearchInput.value = '';
     populateEpgGuideChannelSelect();
@@ -2486,25 +2884,27 @@
   }
 
   epgGuideBtn.addEventListener('click', openEpgGuide);
+  // Switches the UI language when the user picks a different option in the dropdown.
+  langSelect.addEventListener('change', () => setLang(langSelect.value));
   closeEpgGuideBtn.addEventListener('click', () => epgGuideModal.classList.remove('open'));
   epgGuideModal.addEventListener('click', (e) => { if (e.target === epgGuideModal) epgGuideModal.classList.remove('open'); });
   epgGuideChannelSelect.addEventListener('change', renderEpgGuideList);
   epgGuideSearchInput.addEventListener('input', renderEpgGuideList);
 
   // ============================================================
-  // Einstellungen-Dialog
+  // Settings dialog
   // ============================================================
   const settingsModal = document.getElementById('settingsModal');
   const settingsStatus = document.getElementById('settingsStatus');
 
-  // Akkordeon-Verhalten für die Einstellungs-Abschnitte: hält das Menü kurz und
-  // überschaubar statt einer langen Scroll-Liste. "Wiedergabe" ist beim Start
-  // aufgeklappt, da am häufigsten genutzt; die übrigen merken sich den zuletzt
-  // gewählten Zustand.
+  // Accordion behavior for the settings sections: keeps the menu short and
+  // manageable instead of a long scroll list. "Playback" is expanded on
+  // startup since it's used most often; the others remember their last
+  // chosen state.
   const ACC_STATE_KEY = 'signal_settingsAccState';
   let accState = { playback: true };
   try{ accState = Object.assign(accState, JSON.parse(localStorage.getItem(ACC_STATE_KEY) || '{}')); }catch(e){}
-  // Wendet den Auf-/Zugeklappt-Zustand der Einstellungs-Accordion an.
+  // Applies the expanded/collapsed state of the settings accordion.
   function applyAccState(){
     document.querySelectorAll('.acc-sec').forEach((sec) => {
       const key = sec.dataset.acc;
@@ -2539,7 +2939,7 @@
   document.getElementById('closeSettingsBtn').addEventListener('click', () => saveSettingsAndClose());
   settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) saveSettingsAndClose(); });
 
-  // Übernimmt die Einstellungen aus dem Dialog in den State und schließt ihn.
+  // Applies the settings from the dialog to the state and closes it.
   function saveSettingsAndClose(){
     state.settings.restoreLast = document.getElementById('restoreLastToggle').checked;
     state.settings.subtitlesDefault = document.getElementById('subtitlesDefaultToggle').checked;
@@ -2557,13 +2957,13 @@
   document.getElementById('testProxyBtn').addEventListener('click', async () => {
     const proxyStatus = document.getElementById('proxyStatus');
     const port = parseInt(document.getElementById('proxyPortInput').value, 10) || 8787;
-    showStatus(proxyStatus, 'Teste Verbindung zu 127.0.0.1:' + port + ' …', 'info');
+    showStatus(proxyStatus, t('testingProxy', port), 'info');
     try{
       const res = await fetch('http://127.0.0.1:' + port + '/health');
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      showStatus(proxyStatus, 'Proxy erreichbar und einsatzbereit.', 'ok');
+      showStatus(proxyStatus, t('proxyReachable'), 'ok');
     }catch(err){
-      showStatus(proxyStatus, 'Proxy nicht erreichbar. Läuft epg_proxy.py? (' + err.message + ')', 'error');
+      showStatus(proxyStatus, t('proxyUnreachable', err.message), 'error');
     }
   });
 
@@ -2581,7 +2981,7 @@
   document.getElementById('linkFolderBtn').addEventListener('click', async () => {
     const res = await chooseConfigFolder();
     if (res.ok){
-      showStatus(settingsStatus, res.loadedExisting ? 'Bestehende Konfiguration aus dem Ordner geladen und verknüpft.' : 'Ordner verknüpft - signal-config.json wurde dort angelegt.', 'ok');
+      showStatus(settingsStatus, res.loadedExisting ? t('folderLinkedExisting') : t('folderLinked'), 'ok');
       document.getElementById('restoreLastToggle').checked = state.settings.restoreLast;
       document.getElementById('subtitlesDefaultToggle').checked = state.settings.subtitlesDefault;
       document.getElementById('subtitleLangInput').value = state.settings.subtitleLang;
@@ -2590,12 +2990,12 @@
       document.getElementById('proxyPortInput').value = state.settings.proxyPort;
       document.getElementById('epgRefreshHoursInput').value = state.settings.epgRefreshHours;
     } else {
-      showStatus(settingsStatus, 'Ordnerauswahl abgebrochen oder fehlgeschlagen.', 'error');
+      showStatus(settingsStatus, t('folderSelectAbortedOrFailed'), 'error');
     }
   });
   document.getElementById('unlinkFileBtn').addEventListener('click', async () => {
     await unlinkConfigFile();
-    showStatus(settingsStatus, 'Verknüpfung entfernt. Änderungen werden nur noch lokal im Browser gespeichert.', 'info');
+    showStatus(settingsStatus, t('unlinkedNote'), 'info');
   });
 
   document.getElementById('exportConfigBtn').addEventListener('click', () => {
@@ -2604,7 +3004,7 @@
     a.href = URL.createObjectURL(blob);
     a.download = 'signal-iptv-konfiguration.json';
     document.body.appendChild(a); a.click(); a.remove();
-    showStatus(settingsStatus, 'Konfiguration exportiert.', 'ok');
+    showStatus(settingsStatus, t('configExported'), 'ok');
   });
 
   document.getElementById('importConfigInput').addEventListener('change', (e) => {
@@ -2614,21 +3014,21 @@
     reader.onload = () => {
       try{
         const data = JSON.parse(reader.result);
-        if (!Array.isArray(data.playlists)) throw new Error('Ungültiges Format');
+        if (!Array.isArray(data.playlists)) throw new Error(t('invalidFormat'));
         applyLoadedConfig(data);
         persistConfig();
         renderPlaylistManager();
         if (state.activePlaylistId) switchPlaylist(state.activePlaylistId, true);
-        showStatus(settingsStatus, 'Konfiguration importiert: ' + state.playlists.length + ' Playlist(s).', 'ok');
+        showStatus(settingsStatus, t('configImported', state.playlists.length), 'ok');
       }catch(err){
-        showStatus(settingsStatus, 'Import fehlgeschlagen: Datei ist keine gültige Konfiguration.', 'error');
+        showStatus(settingsStatus, t('importFailed'), 'error');
       }
     };
     reader.readAsText(file);
   });
 
   document.getElementById('clearAllBtn').addEventListener('click', async () => {
-    if (!confirm('Wirklich ALLE gespeicherten Playlists, Favoriten und Einstellungen löschen? Dies kann nicht rückgängig gemacht werden.')) return;
+    if (!confirm(t('confirmDeleteAll'))) return;
     state = { playlists: [], activePlaylistId: null, overrides: {}, favorites: {}, settings: { restoreLast:true, subtitlesDefault:false, subtitleLang:'', audioLang:'', proxyEnabled:false, proxyPort:8787, epgRefreshHours:4 }, lastWatched: null, epgMeta: {} };
     channels = []; activeIndex = -1; epgByTvgId = {};
     if (STORAGE_OK){ try{ await window.storage.delete('signal:config'); }catch(e){} }
@@ -2638,12 +3038,12 @@
     buildGroupFilter();
     renderChannelList();
     stopPlayback();
-    showStatus(settingsStatus, 'Alle Daten gelöscht.', 'ok');
+    showStatus(settingsStatus, t('allDataDeleted'), 'ok');
   });
 
   // ============================================================
-  // Config-Datei erneut verbinden (nach Neustart, wenn der Browser
-  // die Zugriffserlaubnis nicht automatisch beibehalten hat)
+  // Reconnect the config file (after a restart, when the browser
+  // hasn't automatically retained the access permission)
   // ============================================================
   document.getElementById('reconnectDismissBtn').addEventListener('click', () => {
     pendingDirHandle = null;
@@ -2652,11 +3052,11 @@
   document.getElementById('reconnectFileBtn').addEventListener('click', () => reconnectConfigFile());
 
   // ============================================================
-  // Erststart: fragen, wie die Konfiguration gespeichert werden soll
+  // First run: ask how the configuration should be saved
   // ============================================================
   const fileSetupModal = document.getElementById('fileSetupModal');
   const fileSetupStatus = document.getElementById('fileSetupStatus');
-  // Schließt den Erststart-Dialog.
+  // Closes the first-run dialog.
   function closeFileSetup(){ fileSetupModal.classList.remove('open'); }
   document.getElementById('closeFileSetupBtn').addEventListener('click', closeFileSetup);
   document.getElementById('setupSkipBtn').addEventListener('click', () => {
@@ -2665,22 +3065,23 @@
   });
   fileSetupModal.addEventListener('click', (e) => { if (e.target === fileSetupModal) closeFileSetup(); });
   document.getElementById('setupChooseFolderBtn').addEventListener('click', async () => {
-    showStatus(fileSetupStatus, 'Ordner wird verknüpft…', 'info');
+    showStatus(fileSetupStatus, t('linkingFolder'), 'info');
     const res = await chooseConfigFolder();
     if (res.ok){
-      showStatus(fileSetupStatus, res.loadedExisting ? 'Bestehende Konfiguration geladen.' : 'Ordner verknüpft.', 'ok');
+      showStatus(fileSetupStatus, res.loadedExisting ? t('folderLinkedExisting') : t('folderLinked'), 'ok');
       setTimeout(closeFileSetup, 700);
       tryAutoResume();
     } else {
-      showStatus(fileSetupStatus, 'Abgebrochen oder fehlgeschlagen.', 'error');
+      showStatus(fileSetupStatus, t('abortedOrFailed'), 'error');
     }
   });
 
   // ============================================================
   // Init
   // ============================================================
-  // Initialisiert die App: lädt Konfiguration, rendert UI, startet Timer.
+  // Initializes the app: loads configuration, renders the UI, starts timers.
   async function init(){
+    applyStaticI18n();
     let loadedFromFile = false;
     if (FS_ACCESS_OK){
       const fileData = await tryReconnectConfigFile();
