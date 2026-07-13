@@ -63,6 +63,6 @@ Three built-in options are available:
 
 # License
 
-This project is licensed under a custom non-commercial license – see [LICENSE](LICENSE). Non-commercial use, copying, and modification are permitted; commercial use requires prior written permission from the author.
+This project is licensed under a custom non-commercial license - see [LICENSE](LICENSE). Non-commercial use, copying, and modification are permitted; commercial use requires prior written permission from the author.
 
 **Disclaimer:** This software is provided "as is". No liability is accepted for data loss, or security incidents. Use at your own risk.
