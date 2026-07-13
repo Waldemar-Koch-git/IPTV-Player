@@ -1,59 +1,70 @@
 # SIGNAL IPTV Player
 
-SIGNAL ist ein lokaler IPTV-Player für M3U- und HLS-Playlists.  
-Die Anwendung läuft als einzelne HTML-Datei direkt im Browser und unterstützt EPG-Daten im XMLTV-Format.
+SIGNAL is a local IPTV player for M3U and HLS playlists.
+It runs as a single HTML file directly in the browser and supports EPG data in XMLTV format.
 
 ![Preview](./images_/preview.jpg)
 
-## Funktionen
+## Features
 
-- Wiedergabe von M3U- und M3U8/HLS-Playlists
-- Playlist-Import per URL oder Datei
-- EPG-Unterstützung per XMLTV-URL oder XML/XML.GZ-Datei
-- Favoritenliste
-- Kategorien umbenennen oder ausblenden
-- Programmliste mit Suchfunktion
-- Audio- und Untertitel-Auswahl, sofern vom Stream angeboten
-- Lokale Speicherung von Playlists, Favoriten und Einstellungen (Backup Export/Import)
-- Optionaler lokaler Proxy für Server mit CORS-Sperre
-- Keine externen CDNs, Fonts oder Tracking-Dienste
+- Playback of M3U and M3U8/HLS playlists
+- Playlist import via URL or file
+- EPG support via XMLTV URL or XML/XML.GZ file
+- Favorites list
+- Rename or hide categories
+- Program guide with search
+- Audio and subtitle track selection, if offered by the stream
+- Multi-language UI (dropdown in the header) — English by default, with more languages easy to add
+- Local storage of playlists, favorites, and settings (backup export/import)
+- Optional local proxy for servers with CORS restrictions
+- No external CDNs, fonts, or tracking services
 
-## Nutzung
+## Usage
 
-1. `iptv_player.html` herunterladen.
-2. Datei im Browser öffnen.
-3. Playlist per URL oder Datei hinzufügen.
-4. Sender auswählen und abspielen.
-5. Optional eine EPG-Quelle zur Playlist hinzufügen.
+1. Download `iptv_player.html`.
+2. Open the file in your browser.
+3. Add a playlist via URL or file.
+4. Select a channel and play it.
+5. Optionally add an EPG source to the playlist.
 
-## Lokale Speicherung
+## Language
 
-SIGNAL speichert die Konfiguration lokal im Browser.  
-In unterstützten Browsern kann zusätzlich ein Ordner verknüpft werden. Dort wird die Datei `signal-config.json` angelegt und automatisch aktualisiert.
+The UI language can be switched via the dropdown in the top-right header (default: English).
+The chosen language is remembered for future visits. Additional languages can be added by
+extending the `AVAILABLE_LANGS` list and the corresponding translation dictionary in the file.
 
-Gespeichert werden unter anderem:
+## Local Storage
+
+SIGNAL stores its configuration locally in the browser.
+In supported browsers, a folder can additionally be linked. The file `signal-config.json` is
+created there and updated automatically.
+
+Stored data includes:
 
 - Playlists
-- Favoriten
-- Kategorie-Anpassungen
-- Einstellungen
-- zuletzt gesehener Sender
-- EPG-Quellen
+- Favorites
+- Category customizations
+- Settings
+- Last-watched channel
+- EPG sources
 
-## EPG und CORS
+## EPG and CORS
 
-Manche EPG- oder Playlist-Server blockieren direkte Browser-Anfragen durch CORS-Regeln.
-Drei eingebaute Optionen.
-1. URL funktioniert direkt und es gibt kein CORS probleme.
-2. URL funktioniert nicht, und ein Umweg über ein CORS-Public-Proxy wird genutzt, aber nur wenn der lokale python Proxy nicht läuft.
-3. Lokaler (python) Proxy läuft nur auf: `127.0.0.1:8787`. Hat vorrang gegenüber Punkt 2 mit dem Öffentlichen Proxy. 
-> Der Python Proxy kann über das Einstellungs-Zahnrad oben rechts gefunden und als python-code abgespeichert werden.
+Some EPG or playlist servers block direct browser requests due to CORS restrictions.
+Three built-in options are available:
 
+1. The URL works directly and there is no CORS issue.
+2. The URL doesn't work directly, so a public CORS proxy is used as a fallback — but only if the local Python proxy isn't running.
+3. A local (Python) proxy running at `127.0.0.1:8787`. This takes priority over the public proxy in option 2.
+
+> The Python proxy script can be downloaded from the settings (gear icon, top right) as a standalone `.py` file.
 
 ---
 
-# Lizenz
+# License
 
-Dieses Projekt unterliegt einer benutzerdefinierten, nicht-kommerziellen Lizenz – siehe LICENSE. Die nicht-kommerzielle Nutzung, Vervielfältigung und Änderung sind gestattet; die kommerzielle Nutzung bedarf der vorherigen schriftlichen Genehmigung des Autors.
+This project is licensed under a custom, non-commercial license — see LICENSE. Non-commercial use,
+copying, and modification are permitted; commercial use requires prior written permission from the author.
 
-Haftungsausschluss: Diese Software wird "wie besehen" bereitgestellt. Es wird keine Haftung für Datenverluste oder Sicherheitsvorfälle übernommen. Die Nutzung erfolgt auf eigene Gefahr.
+Disclaimer: This software is provided "as is". No liability is assumed for data loss or security
+incidents. Use at your own risk.
