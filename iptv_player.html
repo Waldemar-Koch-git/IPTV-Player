@@ -159,13 +159,14 @@
   .layout{
     flex:1;
     display:grid;
-    grid-template-columns:340px 1fr;
+    grid-template-columns:var(--sidebar-w, 340px) 6px 1fr;
     min-height:0;
   }
   .layout.sidebar-collapsed{
-    grid-template-columns:1fr;
+    grid-template-columns:0px 0px 1fr;
   }
-  .layout.sidebar-collapsed aside{
+  .layout.sidebar-collapsed aside,
+  .layout.sidebar-collapsed .main-resize-handle{
     display:none;
   }
   @media (min-width: 861px){
@@ -174,15 +175,45 @@
     .stage-wrap{overflow-y:auto;}
   }
   @media (max-width: 860px){
-    .layout{grid-template-columns:1fr;}
-    .layout.sidebar-collapsed{grid-template-columns:1fr;}
+    .layout, .layout.sidebar-collapsed{grid-template-columns:1fr;}
+    .main-resize-handle{display:none;}
     aside{order:2;}
     .stage-wrap{order:1;}
   }
 
+  /* Draggable handle between the sidebar and the player - resizes the
+     sidebar width, and can be double-clicked to collapse/expand it. */
+  .main-resize-handle{
+    position:relative;
+    cursor:col-resize;
+    background:var(--border);
+    flex-shrink:0;
+  }
+  .main-resize-handle::after{
+    content:'';
+    position:absolute;
+    top:0; bottom:0; left:-4px; right:-4px; /* wider invisible hit-area */
+  }
+  .main-resize-handle::before{
+    content:'⋮';
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    font-size:11px;
+    color:var(--text-dim);
+    line-height:1;
+  }
+  .main-resize-handle:hover,
+  .main-resize-handle.dragging{
+    background:var(--accent-dim);
+  }
+  .main-resize-handle:hover::before,
+  .main-resize-handle.dragging::before{
+    color:var(--accent);
+  }
+
   /* ---------- Sidebar ---------- */
   aside{
-    border-right:1px solid var(--border);
     display:flex;
     flex-direction:column;
     min-height:0;
@@ -213,11 +244,42 @@
   }
   .pm-header.collapsed .pm-toggle-icon{ transform:rotate(-90deg); }
   .pm-list{
-    max-height:160px; overflow-y:auto;
+    height:var(--pm-list-h, 160px); overflow-y:auto;
     padding:2px 8px 8px;
     display:flex; flex-direction:column; gap:4px;
   }
   .pm-list.collapsed{ display:none; }
+  .pm-resize-handle.hidden{ display:none; }
+
+  /* Draggable handle between the playlist/EPG area and the channel list
+     below it - lets users make room for many playlists while searching. */
+  .pm-resize-handle{
+    position:relative;
+    height:7px;
+    margin:-1px 8px 0;
+    cursor:row-resize;
+    flex-shrink:0;
+  }
+  .pm-resize-handle::before{
+    content:'';
+    position:absolute;
+    left:0; right:0; top:3px;
+    height:1px;
+    background:var(--border);
+  }
+  .pm-resize-handle::after{
+    content:'';
+    position:absolute;
+    left:50%; top:1px;
+    width:28px; height:3px;
+    transform:translateX(-50%);
+    border-radius:2px;
+    background:var(--border);
+  }
+  .pm-resize-handle:hover::after,
+  .pm-resize-handle.dragging::after{
+    background:var(--accent);
+  }
   .pm-item{
     display:flex; align-items:center; gap:8px;
     padding:8px 10px;
@@ -237,11 +299,15 @@
   /* Per-playlist EPG (each playlist has its own EPG source, expandable) */
   .pm-item-wrap{ display:flex; flex-direction:column; }
   .pm-epg-toggle{
-    font-size:10px; color:var(--text-dim); flex-shrink:0;
+    display:flex; align-items:center; gap:3px;
+    font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.5px;
+    color:var(--text-dim); flex-shrink:0;
     background:none; border:none; padding:2px 4px; cursor:pointer;
-    transition:transform .15s ease;
   }
   .pm-epg-toggle:hover{ color:var(--accent); }
+  .pm-epg-toggle .pm-epg-toggle-chevron{
+    display:inline-block; font-size:9px; transition:transform .15s ease;
+  }
   .pm-item .pm-epg-badge{
     font-family:var(--font-mono); font-size:9px; color:var(--ok);
     border:1px solid rgba(111,207,151,0.35); background:rgba(111,207,151,0.08);
@@ -259,6 +325,12 @@
   .pm-epg-panel .label{
     font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.5px;
     text-transform:uppercase; color:var(--text-dim);
+  }
+  .pm-epg-panel .pm-epg-intro{
+    font-size:11px; line-height:1.4; color:var(--text-dim); margin:-2px 0 2px;
+  }
+  .pm-epg-enable-row{
+    margin:-2px 0 2px;
   }
 
   .source-form{
@@ -719,16 +791,20 @@
           <input type="file" id="fileInput" accept=".m3u,.m3u8,text/plain">
         </label>
 
-        <div class="label" style="margin-top:2px;" data-i18n="epgUrlLabelOptional">EPG-Quelle (XMLTV) - optional</div>
-        <div class="url-row">
-          <input type="text" id="newPlaylistEpgUrl" data-i18n-placeholder="epgUrlPlaceholder" placeholder="https://.../epg.xml.gz" autocomplete="off">
+        <div class="epg-field-row">
+          <div class="label" style="margin-top:2px;" data-i18n="epgUrlLabelOptional">EPG-Quelle (XMLTV) - optional</div>
+          <div class="url-row">
+            <input type="text" id="newPlaylistEpgUrl" data-i18n-placeholder="epgUrlPlaceholder" placeholder="https://.../epg.xml.gz" autocomplete="off">
+          </div>
+          <div class="status-msg-hint" data-i18n="epgUrlAutoDetectHint">Wird die Playlist selbst schon eine EPG-Quelle mitliefern (x-tvg-url), übernehmen wir sie automatisch - dieses Feld ist dann nicht nötig.</div>
         </div>
-        <div class="status-msg-hint" data-i18n="epgUrlAutoDetectHint">Wird die Playlist selbst schon eine EPG-Quelle mitliefern (x-tvg-url), übernehmen wir sie automatisch - dieses Feld ist dann nicht nötig.</div>
 
         <div class="status-msg" id="statusMsg"></div>
         <button class="btn-ghost" id="cancelAddBtn" style="align-self:flex-start;" data-i18n="cancel">Abbrechen</button>
       </div>
     </div>
+
+    <div class="pm-resize-handle" id="pmResizeHandle" title="Größe der Playlist-Liste anpassen" data-i18n-title="pmResizeHandleTitle" role="separator" aria-orientation="horizontal"></div>
 
     <!-- Tab bar -->
     <div class="tabs" id="tabs">
@@ -751,6 +827,8 @@
       <div class="empty-list" data-i18n="noChannelsLoaded">Noch keine Sender geladen.<br>Oben eine Playlist per URL oder Datei hinzufügen.</div>
     </div>
   </aside>
+
+  <div class="main-resize-handle" id="mainResizeHandle" title="Breite anpassen (Doppelklick: ein-/ausblenden)" data-i18n-title="mainResizeHandleTitle" role="separator" aria-orientation="vertical"></div>
 
   <div class="stage-wrap">
     <div class="stage">
@@ -1011,6 +1089,10 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       proxyAutoBadgeTitle: 'Lokaler Proxy erkannt und aktiv',
       epgGuideBtnTitle: 'Programmvorschau (EPG)',
       settingsBtnTitle: 'Einstellungen',
+      pmResizeHandleTitle: 'Größe der Playlist-Liste anpassen (ziehen)',
+      mainResizeHandleTitle: 'Breite anpassen (ziehen) - Doppelklick zum Ein-/Ausblenden',
+      pmEpgIntro: 'Lädt Sendungsinfos (aktuell/als nächstes) für diese Playlist - per Adresse oder XMLTV-Datei.',
+      epgEnableForPlaylist: 'EPG für diese Playlist verwenden',
       langToggleTitle: 'Sprache wechseln / Switch language',
       pmToggleTitle: 'Playlisten ein-/ausklappen',
       playlistsLabel: 'Playlists',
@@ -1106,7 +1188,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       defaultPlaylistName: 'Playlist',
       defaultUploadedPlaylistName: 'Hochgeladene Playlist',
       playlistSaved: (name, n) => '„' + name + '" gespeichert: ' + n + ' Sender.',
-      playlistSavedEpgDetected: (name, n) => '„' + name + '" gespeichert: ' + n + ' Sender. EPG-Quelle aus der Playlist automatisch übernommen.',
+      playlistSavedEpgDetected: (name, n) => '„' + name + '" gespeichert: ' + n + ' Sender. EPG-Quelle aus der Playlist erkannt und hinterlegt - zum Anzeigen bei dieser Playlist unter „EPG" einschalten.',
       pleaseEnterPlaylistUrl: 'Bitte zuerst eine Playlist-URL eingeben.',
       loadingPlaylist: 'Lade Playlist…',
       playlistLoadFailed: (msg) => 'Playlist konnte nicht geladen werden (' + msg + '). Oft blockiert der Server browserseitige Anfragen (CORS) - aktiviere den lokalen Proxy in den Einstellungen, oder lade die Datei stattdessen herunter und hoch.',
@@ -1177,6 +1259,10 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       proxyAutoBadgeTitle: 'Local proxy detected and active',
       epgGuideBtnTitle: 'Program guide (EPG)',
       settingsBtnTitle: 'Settings',
+      pmResizeHandleTitle: 'Resize the playlist area (drag)',
+      mainResizeHandleTitle: 'Resize width (drag) - double-click to show/hide',
+      pmEpgIntro: 'Loads program info (now/next) for this playlist - via URL or an XMLTV file.',
+      epgEnableForPlaylist: 'Use EPG for this playlist',
       langToggleTitle: 'Switch language / Sprache wechseln',
       pmToggleTitle: 'Expand/collapse playlists',
       playlistsLabel: 'Playlists',
@@ -1272,7 +1358,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       defaultPlaylistName: 'Playlist',
       defaultUploadedPlaylistName: 'Uploaded playlist',
       playlistSaved: (name, n) => '"' + name + '" saved: ' + n + ' channels.',
-      playlistSavedEpgDetected: (name, n) => '"' + name + '" saved: ' + n + ' channels. EPG source detected from the playlist and applied automatically.',
+      playlistSavedEpgDetected: (name, n) => '"' + name + '" saved: ' + n + ' channels. EPG source detected from the playlist and stored - switch it on under "EPG" for this playlist to show it.',
       pleaseEnterPlaylistUrl: 'Please enter a playlist URL first.',
       loadingPlaylist: 'Loading playlist…',
       playlistLoadFailed: (msg) => 'Playlist could not be loaded (' + msg + '). Servers often block browser-side requests (CORS) - enable the local proxy in settings, or download and upload the file instead.',
@@ -1468,6 +1554,100 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       applySidebarCollapsed(next);
       try{ localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0'); }catch(e){}
     });
+  })();
+
+  // ============================================================
+  // Sidebar/player resize handle (drag to resize, double-click to
+  // collapse/expand the sidebar).
+  // ============================================================
+  (function initMainResizeHandle(){
+    const handle = document.getElementById('mainResizeHandle');
+    if (!handle) return;
+    const MIN_W = 220, MAX_W = 640;
+    const WIDTH_KEY = 'signal:sidebarWidth';
+    let saved = null;
+    try{ saved = parseInt(localStorage.getItem(WIDTH_KEY), 10); }catch(e){}
+    if (saved && !isNaN(saved)) {
+      mainLayout.style.setProperty('--sidebar-w', Math.max(MIN_W, Math.min(MAX_W, saved)) + 'px');
+    }
+    let dragging = false, startX = 0, startW = 0;
+    function currentWidth(){
+      const el = document.querySelector('aside');
+      return el ? el.getBoundingClientRect().width : 340;
+    }
+    handle.addEventListener('pointerdown', (e) => {
+      if (mainLayout.classList.contains('sidebar-collapsed')) return;
+      dragging = true;
+      startX = e.clientX;
+      startW = currentWidth();
+      handle.classList.add('dragging');
+      handle.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    handle.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const maxAllowed = Math.min(MAX_W, window.innerWidth - 200);
+      const next = Math.max(MIN_W, Math.min(maxAllowed, startW + (e.clientX - startX)));
+      mainLayout.style.setProperty('--sidebar-w', next + 'px');
+    });
+    function endDrag(e){
+      if (!dragging) return;
+      dragging = false;
+      handle.classList.remove('dragging');
+      try{ handle.releasePointerCapture(e.pointerId); }catch(err){}
+      try{ localStorage.setItem(WIDTH_KEY, String(currentWidth())); }catch(err){}
+    }
+    handle.addEventListener('pointerup', endDrag);
+    handle.addEventListener('pointercancel', endDrag);
+    // Double-click retracts/expands the sidebar, same as the header toggle.
+    handle.addEventListener('dblclick', () => {
+      const next = !mainLayout.classList.contains('sidebar-collapsed');
+      applySidebarCollapsed(next);
+      try{ localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0'); }catch(e){}
+    });
+  })();
+
+  // ============================================================
+  // Playlist-area resize handle (drag to resize the height of the
+  // playlist/EPG list relative to the channel list below it).
+  // ============================================================
+  (function initPmResizeHandle(){
+    const handle = document.getElementById('pmResizeHandle');
+    if (!handle || !pmList) return;
+    const MIN_H = 60, MAX_H = 600;
+    const HEIGHT_KEY = 'signal:pmListHeight';
+    let saved = null;
+    try{ saved = parseInt(localStorage.getItem(HEIGHT_KEY), 10); }catch(e){}
+    if (saved && !isNaN(saved)) {
+      pmList.style.setProperty('height', Math.max(MIN_H, Math.min(MAX_H, saved)) + 'px');
+    }
+    let dragging = false, startY = 0, startH = 0;
+    handle.addEventListener('pointerdown', (e) => {
+      if (pmList.classList.contains('collapsed')) return;
+      dragging = true;
+      startY = e.clientY;
+      startH = pmList.getBoundingClientRect().height;
+      handle.classList.add('dragging');
+      handle.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    handle.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const asideEl = document.querySelector('aside');
+      const asideH = asideEl ? asideEl.getBoundingClientRect().height : 800;
+      const maxAllowed = Math.min(MAX_H, asideH - 220); // leave room for tabs/search/channel list
+      const next = Math.max(MIN_H, Math.min(Math.max(MIN_H, maxAllowed), startH + (e.clientY - startY)));
+      pmList.style.setProperty('height', next + 'px');
+    });
+    function endDrag(e){
+      if (!dragging) return;
+      dragging = false;
+      handle.classList.remove('dragging');
+      try{ handle.releasePointerCapture(e.pointerId); }catch(err){}
+      try{ localStorage.setItem(HEIGHT_KEY, String(Math.round(pmList.getBoundingClientRect().height))); }catch(err){}
+    }
+    handle.addEventListener('pointerup', endDrag);
+    handle.addEventListener('pointercancel', endDrag);
   })();
 
   const STORAGE_OK = !!(window.storage && typeof window.storage.get === 'function');
@@ -2063,11 +2243,12 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       const srcLabel = p.sourceType === 'url' ? t('urlSrc') : t('fileSrc');
       const epgMeta = state.epgMeta[p.id];
       const epgExpanded = epgExpandedPlaylists.has(p.id);
-      const epgBadge = epgMeta ? `<span class="pm-epg-badge" title="${t('epgSourceStored')}">EPG</span>` : '';
+      const epgOn = !!(epgMeta && epgMeta.enabled);
+      const epgBadge = epgOn ? `<span class="pm-epg-badge" title="${t('epgSourceStored')}">EPG</span>` : '';
       const epgUrlVal = epgMeta && epgMeta.sourceType === 'url' ? escapeHtml(epgMeta.sourceUrl || '') : '';
       return `<div class="pm-item-wrap">
         <div class="pm-item${active}" data-id="${p.id}">
-          <button class="pm-epg-toggle" data-action="toggle-epg" data-id="${p.id}" title="${t('epgSourceForTitle')}" aria-expanded="${epgExpanded}">${epgExpanded ? '▾' : '▸'}</button>
+          <button class="pm-epg-toggle" data-action="toggle-epg" data-id="${p.id}" title="${t('epgSourceForTitle')}" aria-expanded="${epgExpanded}"><span class="pm-epg-toggle-chevron">${epgExpanded ? '▾' : '▸'}</span>EPG</button>
           <span class="pm-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</span>
           ${epgBadge}
           <span class="pm-src">${srcLabel}</span>
@@ -2079,6 +2260,11 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
         </div>
         <div class="pm-epg-panel${epgExpanded ? '' : ' collapsed'}" data-id="${p.id}">
           <div class="label">${t('epgSourceXmltvFor', escapeHtml(p.name))}</div>
+          <div class="pm-epg-intro">${t('pmEpgIntro')}</div>
+          <label class="check pm-epg-enable-row">
+            <input type="checkbox" class="pm-epg-enable" data-id="${p.id}" ${epgOn ? 'checked' : ''}>
+            <span>${t('epgEnableForPlaylist')}</span>
+          </label>
           <div class="url-row">
             <input type="text" class="pm-epg-url" data-id="${p.id}" placeholder="${t('epgUrlPlaceholder')}" value="${epgUrlVal}">
             <button class="btn-secondary btn-sm pm-epg-load" data-id="${p.id}">${t('load')}</button>
@@ -2168,7 +2354,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
         showStatus(statusEl, t('loadingEpg'), 'info');
         try{
           const parsed = await fetchEpgUrl(url);
-          state.epgMeta[id] = { sourceType: 'url', sourceUrl: url };
+          state.epgMeta[id] = { sourceType: 'url', sourceUrl: url, enabled: true };
           persistConfig();
           if (id === state.activePlaylistId){
             epgByTvgId = parsed;
@@ -2193,7 +2379,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       reader.onload = async () => {
         try{
           const parsed = await loadEpgFromArrayBuffer(reader.result);
-          state.epgMeta[id] = { sourceType: 'file', sourceUrl: null };
+          state.epgMeta[id] = { sourceType: 'file', sourceUrl: null, enabled: true };
           persistConfig();
           if (id === state.activePlaylistId){
             epgByTvgId = parsed;
@@ -2226,6 +2412,30 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     pmList.querySelectorAll('.pm-epg-url').forEach(input => {
       input.addEventListener('click', (e) => e.stopPropagation());
       input.addEventListener('keydown', (e) => e.stopPropagation());
+    });
+    // Master on/off switch per playlist - off by default. Turning it on
+    // (re-)fetches an already configured URL source; turning it off just
+    // stops using the data without discarding the stored source.
+    pmList.querySelectorAll('.pm-epg-enable').forEach(cb => {
+      cb.addEventListener('click', (e) => e.stopPropagation());
+      cb.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const id = cb.dataset.id;
+        if (!state.epgMeta[id]) state.epgMeta[id] = { sourceType: null, sourceUrl: null };
+        state.epgMeta[id].enabled = cb.checked;
+        persistConfig();
+        renderPlaylistManager();
+        if (id === state.activePlaylistId){
+          if (cb.checked) {
+            loadEpgForActivePlaylist();
+          } else {
+            epgByTvgId = {};
+            renderChannelList();
+            if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
+          }
+        }
+        scheduleEpgAutoRefresh();
+      });
     });
   }
 
@@ -2292,7 +2502,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     const resolvedEpgUrl = (epgUrl && epgUrl.trim()) || extractEmbeddedEpgUrl(rawText);
     let epgAutoDetected = false;
     if (resolvedEpgUrl){
-      state.epgMeta[p.id] = { sourceType: 'url', sourceUrl: resolvedEpgUrl };
+      state.epgMeta[p.id] = { sourceType: 'url', sourceUrl: resolvedEpgUrl, enabled: false };
       epgAutoDetected = !(epgUrl && epgUrl.trim());
     }
 
@@ -2310,8 +2520,6 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     if (newEpgUrlInput) newEpgUrlInput.value = '';
     document.getElementById('dropLabel').textContent = t('m3uDropLabel');
 
-    if (resolvedEpgUrl) loadEpgForActivePlaylist();
-
     return true;
   }
 
@@ -2323,6 +2531,8 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     pmList.classList.toggle('collapsed', pmCollapsed);
     pmHeader.classList.toggle('collapsed', pmCollapsed);
     pmToggleBtn.setAttribute('aria-expanded', String(!pmCollapsed));
+    const pmResizeHandle = document.getElementById('pmResizeHandle');
+    if (pmResizeHandle) pmResizeHandle.classList.toggle('hidden', pmCollapsed);
   }
   applyPmCollapsed();
   pmToggleBtn.addEventListener('click', () => {
@@ -2867,16 +3077,17 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     epgRefetchTimer = setInterval(() => {
       const id = state.activePlaylistId;
       const meta = id ? state.epgMeta[id] : null;
-      if (meta && meta.sourceType === 'url') loadEpgForActivePlaylist();
+      if (meta && meta.enabled && meta.sourceType === 'url') loadEpgForActivePlaylist();
     }, hours * 3600000);
   }
 
-  // Loads the EPG for the active playlist, if a URL source is configured.
+  // Loads the EPG for the active playlist, if it has a URL source configured
+  // AND the playlist's own EPG switch is turned on.
   async function loadEpgForActivePlaylist(){
     epgByTvgId = {};
     const id = state.activePlaylistId;
     const meta = id ? state.epgMeta[id] : null;
-    if (!meta || meta.sourceType !== 'url') { renderChannelList(); return; }
+    if (!meta || !meta.enabled || meta.sourceType !== 'url') { renderChannelList(); return; }
     try{
       showStatus(statusMsg, t('loadingEpg'), 'info');
       epgByTvgId = await fetchEpgUrl(meta.sourceUrl);
@@ -3291,6 +3502,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
         if (!Array.isArray(data.playlists)) throw new Error(t('invalidFormat'));
         applyLoadedConfig(data);
         persistConfig();
+        scheduleEpgAutoRefresh();
         renderPlaylistManager();
         if (state.activePlaylistId) switchPlaylist(state.activePlaylistId, true);
         showStatus(settingsStatus, t('configImported', state.playlists.length), 'ok');
@@ -3308,6 +3520,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     if (STORAGE_OK){ try{ await window.storage.delete('signal:config'); }catch(e){} }
     try{ localStorage.removeItem(localFallbackKey()); }catch(e){}
     if (configFileHandle){ try{ await writeConfigToFile(configFileHandle, buildConfigPayload()); }catch(e){} }
+    scheduleEpgAutoRefresh();
     renderPlaylistManager();
     buildGroupFilter();
     renderChannelList();
