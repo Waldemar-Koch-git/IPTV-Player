@@ -161,6 +161,7 @@
     display:grid;
     grid-template-columns:var(--sidebar-w, 340px) 6px 1fr;
     min-height:0;
+    min-width:0;
   }
   .layout.sidebar-collapsed{
     grid-template-columns:0px 0px 1fr;
@@ -169,16 +170,33 @@
   .layout.sidebar-collapsed .main-resize-handle{
     display:none;
   }
+  /* IMPORTANT: aside/handle get "display:none" when the sidebar is
+     collapsed. Grid children with display:none are removed entirely
+     from auto-placement -> the remaining children would otherwise
+     shift into column 1/2 (0px wide) instead of staying in column 3,
+     where the space is. That's why we pin every column explicitly
+     here, regardless of whether a sibling element is visible. */
   @media (min-width: 861px){
     html, body{height:100%;}
     body{height:100vh; overflow:hidden;}
-    .stage-wrap{overflow-y:auto;}
+    .stage-wrap{overflow-y:auto; grid-column:3;}
+    aside{grid-column:1;}
+    .main-resize-handle{grid-column:2;}
   }
   @media (max-width: 860px){
-    .layout, .layout.sidebar-collapsed{grid-template-columns:1fr;}
+    html, body{height:auto;}
+    body{overflow:visible;}
+    .layout, .layout.sidebar-collapsed{
+      grid-template-columns:1fr;   /* single column: sidebar+video stacked */
+      grid-template-rows:auto auto; /* each row sized to its content (video via aspect-ratio) */
+      height:auto;
+    }
     .main-resize-handle{display:none;}
-    aside{order:2;}
-    .stage-wrap{order:1;}
+    /* grid-column:1 here is required because the desktop query above
+       sets grid-column:1/2/3 - without this reset, stage-wrap would
+       land in the wrong (non-existent) column 3. */
+    aside{order:2; min-height:0; overflow-y:auto; grid-column:1;}
+    .stage-wrap{order:1; overflow-y:visible; grid-column:1;}
   }
 
   /* Draggable handle between the sidebar and the player - resizes the
@@ -220,7 +238,7 @@
     background:var(--panel);
   }
 
-  /* Playlist ("Konto") manager */
+  /* Playlist ("Account") manager */
   .playlist-manager{
     border-bottom:1px solid var(--border);
   }
@@ -503,6 +521,7 @@
     display:flex;
     flex-direction:column;
     min-height:0;
+    min-width:0;
   }
   .stage{
     position:relative;
@@ -1055,6 +1074,8 @@
 </div>
 
 <!-- EPG source (inserted via JS below the playlist manager) -->
+
+<!-- Locally embedded libraries (no external CDN, no data sent to third parties) -->
 
 <!-- Locally embedded libraries (no external CDN, no data sent to third parties) -->
 
