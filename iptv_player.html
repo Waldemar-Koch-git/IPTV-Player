@@ -3364,7 +3364,8 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     try{ await idbDel(EPG_FILE_CACHE_IDB_PREFIX + playlistId); }catch(e){ /* ignore */ }
   }
 
-
+  // Rounds milliseconds to whole minutes.
+  function formatMin(ms){ return Math.max(0, Math.round(ms / 60000)); }
 
   // Updates the HUD and footer display with the current and next program.
   // During catchup/archive playback (activeCatchup set), shows the archived
