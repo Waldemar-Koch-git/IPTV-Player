@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SIGNAL - IPTV Player</title>
 <!--
   Privacy notice: this page deliberately loads NO external resources
@@ -123,6 +124,7 @@
     0%,100%{transform:translate(-50%,-100%) rotate(-35deg);}
     50%{transform:translate(-50%,-100%) rotate(35deg);}
   }
+  header > div{min-width:0;}
   header h1{
     font-family:var(--font-display);
     font-weight:700;
@@ -131,6 +133,7 @@
     margin:0;
     text-transform:uppercase;
     line-height:1.1;
+    white-space:nowrap;
   }
   header .sub{
     font-family:var(--font-mono);
@@ -138,8 +141,14 @@
     color:var(--text-dim);
     letter-spacing:0.5px;
     line-height:1.2;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
   }
   header .spacer{flex:1;}
+  @media (max-width: 860px){
+    .gear-btn, .icon-btn{width:40px; height:40px; font-size:17px;}
+  }
   .gear-btn, .icon-btn{
     width:30px; height:30px;
     border-radius:8px;
