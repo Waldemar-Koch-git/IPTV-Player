@@ -1190,6 +1190,10 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       urlSrc: 'URL',
       fileSrc: 'Datei',
       epgSourceStored: 'EPG-Quelle hinterlegt',
+      clearEpgBtn: 'EPG löschen',
+      clearEpgBtnTitle: 'Gespeicherte EPG-Daten und -Quelle für diese Playlist entfernen',
+      confirmClearEpg: (name) => 'Gespeicherte EPG-Daten und -Quelle für „' + name + '\" wirklich entfernen?',
+      epgCleared: 'EPG-Daten und -Quelle entfernt.',
       refresh: 'Aktualisieren',
       rename: 'Umbenennen',
       promptNewName: 'Neuer Name für diese Playlist:',
@@ -1200,7 +1204,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       loadingEpg: 'Lade EPG…',
       epgLoadedCount: (n) => 'EPG geladen: ' + n + ' Sender mit Programmdaten.',
       epgLoadFailed: (msg) => 'EPG konnte nicht geladen werden (' + msg + '). Aktiviere den lokalen Proxy in den Einstellungen (empfohlen, damit die Daten auch automatisch aktuell bleiben), oder lade die Datei stattdessen manuell hoch.',
-      epgLoadedFileNote: (n) => 'EPG geladen: ' + n + ' Sender mit Programmdaten. Hinweis: Datei-EPGs werden aus Speicherplatzgründen nicht dauerhaft gespeichert - beim nächsten Besuch bitte erneut hochladen.',
+      epgLoadedFileNote: (n) => 'EPG geladen: ' + n + ' Sender mit Programmdaten. Wird für die eingestellte Auffrischungsdauer gespeichert - danach bitte die Datei erneut hochladen.',
       epgFileReadFailed: (msg) => 'EPG-Datei konnte nicht gelesen werden (' + msg + ').',
       playlistActive: (name, n) => '„' + name + '" aktiv: ' + n + ' Sender.',
       playlistUpdated: (name) => '„' + name + '" aktualisiert.',
@@ -1360,6 +1364,10 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       urlSrc: 'URL',
       fileSrc: 'File',
       epgSourceStored: 'EPG source stored',
+      clearEpgBtn: 'Clear EPG',
+      clearEpgBtnTitle: 'Remove the stored EPG data and source for this playlist',
+      confirmClearEpg: (name) => 'Really remove the stored EPG data and source for "' + name + '"?',
+      epgCleared: 'EPG data and source removed.',
       refresh: 'Refresh',
       rename: 'Rename',
       promptNewName: 'New name for this playlist:',
@@ -1370,7 +1378,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       loadingEpg: 'Loading EPG…',
       epgLoadedCount: (n) => 'EPG loaded: ' + n + ' channels with program data.',
       epgLoadFailed: (msg) => 'EPG could not be loaded (' + msg + '). Enable the local proxy in settings (recommended so data also stays automatically up to date), or upload the file manually instead.',
-      epgLoadedFileNote: (n) => 'EPG loaded: ' + n + ' channels with program data. Note: file-based EPGs are not saved permanently to save storage space - please re-upload on your next visit.',
+      epgLoadedFileNote: (n) => 'EPG loaded: ' + n + ' channels with program data. Kept for the configured refresh duration - after that, please re-upload the file.',
       epgFileReadFailed: (msg) => 'EPG file could not be read (' + msg + ').',
       playlistActive: (name, n) => '"' + name + '" active: ' + n + ' channels.',
       playlistUpdated: (name) => '"' + name + '" updated.',
@@ -2294,6 +2302,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
             <span class="pm-epg-drop-label">${epgMeta && epgMeta.sourceType === 'file' ? t('fileUploaded') : t('xmlDropLabel')}</span>
             <input type="file" class="pm-epg-file" data-id="${p.id}" accept=".xml,.xml.gz,application/xml">
           </label>
+          ${epgMeta && epgMeta.sourceType ? `<button class="btn-secondary btn-sm pm-epg-clear" data-id="${p.id}" title="${t('clearEpgBtnTitle')}">${t('clearEpgBtn')}</button>` : ''}
           <div class="status-msg pm-epg-status" data-id="${p.id}"></div>
         </div>
       </div>`;
@@ -2339,6 +2348,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
         delete state.overrides[p.id];
         delete state.favorites[p.id];
         delete state.epgMeta[p.id];
+        clearEpgFileCacheEntry(p.id);
         epgExpandedPlaylists.delete(p.id);
         persistEpgExpanded();
         if (state.activePlaylistId === p.id){
@@ -2374,7 +2384,10 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
         if (!url){ showStatus(statusEl, t('pleaseEnterEpgUrl'), 'error'); return; }
         showStatus(statusEl, t('loadingEpg'), 'info');
         try{
-          const parsed = await fetchEpgUrl(url);
+          // Manual load = explicit user intent to refresh now, bypass the cache.
+          // Still populates the cache afterwards so other playlists sharing
+          // this same EPG URL benefit from the fresh data too.
+          const parsed = await loadEpgForUrl(url, true);
           state.epgMeta[id] = { sourceType: 'url', sourceUrl: url, enabled: true };
           persistConfig();
           if (id === state.activePlaylistId){
@@ -2402,6 +2415,13 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
           const parsed = await loadEpgFromArrayBuffer(reader.result);
           state.epgMeta[id] = { sourceType: 'file', sourceUrl: null, enabled: true };
           persistConfig();
+          // Cache the parsed data (memory + IndexedDB) so it survives
+          // playlist switches and app restarts until epgRefreshHours
+          // elapses - same TTL semantics as the URL-based cache, just
+          // keyed by playlist id since there's no source URL here.
+          const entry = { data: parsed, fetchedAt: Date.now() };
+          epgFileCache[id] = entry;
+          persistEpgFileCacheEntry(id, entry);
           if (id === state.activePlaylistId){
             epgByTvgId = parsed;
             renderChannelList();
@@ -2428,6 +2448,42 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
         e.preventDefault(); e.stopPropagation();
         zone.classList.remove('drag');
         handlePmEpgFile(zone.dataset.id, e.dataTransfer.files[0]);
+      });
+    });
+    // Manually clears the stored EPG source + cached data for a single
+    // playlist (both the URL-based and file-based cache, whichever
+    // applies) - e.g. to force a clean re-fetch or free up space,
+    // without having to delete and re-add the whole playlist.
+    pmList.querySelectorAll('.pm-epg-clear').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const p = state.playlists.find(x => x.id === id);
+        const statusEl = pmList.querySelector(`.pm-epg-status[data-id="${id}"]`);
+        if (!confirm(t('confirmClearEpg', p ? p.name : ''))) return;
+        const meta = state.epgMeta[id];
+        // Drop the in-memory + IndexedDB cache entries. For a URL source,
+        // only clear it here if no *other* playlist still references the
+        // same URL - otherwise we'd force them to re-download too.
+        if (meta && meta.sourceType === 'url' && meta.sourceUrl){
+          const stillUsedElsewhere = Object.entries(state.epgMeta)
+            .some(([pid, m]) => pid !== id && m && m.sourceType === 'url' && m.sourceUrl === meta.sourceUrl);
+          if (!stillUsedElsewhere){
+            delete epgCache[meta.sourceUrl];
+            try{ await idbDel(EPG_CACHE_IDB_PREFIX + meta.sourceUrl); }catch(err){ /* ignore */ }
+          }
+        } else if (meta && meta.sourceType === 'file'){
+          await clearEpgFileCacheEntry(id);
+        }
+        delete state.epgMeta[id];
+        persistConfig();
+        if (id === state.activePlaylistId){
+          epgByTvgId = {};
+          renderChannelList();
+          if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
+        }
+        showStatus(statusEl, t('epgCleared'), 'ok');
+        renderPlaylistManager();
       });
     });
     pmList.querySelectorAll('.pm-epg-url').forEach(input => {
@@ -3085,6 +3141,112 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     return loadEpgFromArrayBuffer(buf);
   }
 
+  // ============================================================
+  // EPG cache: keyed by source URL (not playlist id), since several
+  // playlists can share the same EPG URL and shouldn't each trigger
+  // their own download. Entries are considered fresh until
+  // `epgRefreshHours` have passed - only then is the URL actually
+  // re-fetched. Merely switching between playlists (even repeatedly),
+  // or closing and reopening the app, never re-downloads an EPG
+  // that's still fresh.
+  //
+  // Persisted in IndexedDB (same DB already used for file handles)
+  // rather than localStorage, since parsed XMLTV data for many
+  // channels/days can easily be several MB - well beyond what fits
+  // comfortably in localStorage's ~5-10MB per-origin budget.
+  // { url: { data: {tvgId: [...]}, fetchedAt: number(ms), inFlight: Promise|null } }
+  // ============================================================
+  const epgCache = {};
+  const EPG_CACHE_IDB_PREFIX = 'epgCache:';
+  let epgCacheLoadedFromIdb = false;
+
+  function epgTtlMs(){
+    const hours = Math.max(1, parseInt(state.settings.epgRefreshHours, 10) || 4);
+    return hours * 3600000;
+  }
+
+  // Serializes Date objects to ISO strings for storage.
+  function serializeEpgData(data){
+    const out = {};
+    for (const k in data) out[k] = data[k].map(p => ({ start: p.start.toISOString(), stop: p.stop.toISOString(), title: p.title }));
+    return out;
+  }
+  // Reverses serializeEpgData, turning ISO strings back into Date objects.
+  function deserializeEpgData(data){
+    const out = {};
+    for (const k in data) out[k] = data[k].map(p => ({ start: new Date(p.start), stop: new Date(p.stop), title: p.title }));
+    return out;
+  }
+
+  // Persists a single EPG cache entry to IndexedDB, keyed by its source URL.
+  async function persistEpgCacheEntry(url, entry){
+    try{
+      await idbSet(EPG_CACHE_IDB_PREFIX + url, { data: serializeEpgData(entry.data), fetchedAt: entry.fetchedAt });
+    }catch(e){ console.warn('EPG-Cache konnte nicht gespeichert werden', e); }
+  }
+
+  // On startup, loads any previously cached EPG entries needed right now
+  // (the sources actually configured+enabled across all playlists) from
+  // IndexedDB, so a fresh app start doesn't force a re-download of data
+  // that's still within the refresh window. Loaded lazily/on-demand
+  // instead of eagerly for every stored URL, to keep startup fast.
+  async function loadEpgCacheEntryFromIdb(url){
+    try{
+      const stored = await idbGet(EPG_CACHE_IDB_PREFIX + url);
+      if (!stored) return null;
+      const entry = { data: deserializeEpgData(stored.data), fetchedAt: stored.fetchedAt, inFlight: null };
+      epgCache[url] = entry;
+      return entry;
+    }catch(e){ return null; }
+  }
+
+  // Returns cached EPG data for a URL, or null if missing/expired.
+  // Checks the in-memory cache first, then (once per URL per session)
+  // falls back to IndexedDB so data survives closing/reopening the app.
+  async function getFreshEpgCacheEntryAsync(url){
+    let entry = epgCache[url];
+    if (!entry){
+      entry = await loadEpgCacheEntryFromIdb(url);
+    }
+    if (!entry || !entry.data) return null;
+    if (Date.now() - entry.fetchedAt > epgTtlMs()) return null;
+    return entry;
+  }
+
+  // Synchronous variant for callers that only care about the in-memory
+  // cache (e.g. after a fetch already populated it this session).
+  function getFreshEpgCacheEntry(url){
+    const entry = epgCache[url];
+    if (!entry || !entry.data) return null;
+    if (Date.now() - entry.fetchedAt > epgTtlMs()) return null;
+    return entry;
+  }
+
+  // Loads EPG data for a source URL, using the cache (memory, then
+  // IndexedDB) when still fresh. Concurrent requests for the same URL
+  // (e.g. two playlists sharing an EPG source, or quick back-and-forth
+  // switching) share a single in-flight fetch instead of triggering
+  // duplicate downloads. Pass forceRefresh=true to bypass the cache
+  // (manual "Load" button / auto-refresh timer once the TTL elapsed).
+  async function loadEpgForUrl(url, forceRefresh){
+    if (!forceRefresh){
+      const fresh = await getFreshEpgCacheEntryAsync(url);
+      if (fresh) return fresh.data;
+      if (epgCache[url] && epgCache[url].inFlight) return epgCache[url].inFlight;
+    }
+    const promise = fetchEpgUrl(url).then(data => {
+      const entry = { data, fetchedAt: Date.now(), inFlight: null };
+      epgCache[url] = entry;
+      persistEpgCacheEntry(url, entry);
+      return data;
+    }).catch(err => {
+      if (epgCache[url]) epgCache[url].inFlight = null;
+      throw err;
+    });
+    epgCache[url] = Object.assign(epgCache[url] || {}, { inFlight: promise });
+    return promise;
+  }
+
   // Automatically reloads the EPG at regular intervals (default:
   // every 4 hours), so program data stays current without requiring
   // a manual download. Works directly if
@@ -3098,20 +3260,57 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     epgRefetchTimer = setInterval(() => {
       const id = state.activePlaylistId;
       const meta = id ? state.epgMeta[id] : null;
-      if (meta && meta.enabled && meta.sourceType === 'url') loadEpgForActivePlaylist();
+      // Force a real refresh here (bypassing the cache) since this timer
+      // firing is exactly the "TTL elapsed" signal for the active source.
+      if (meta && meta.enabled && meta.sourceType === 'url') loadEpgForActivePlaylist(true);
     }, hours * 3600000);
   }
 
-  // Loads the EPG for the active playlist, if it has a URL source configured
-  // AND the playlist's own EPG switch is turned on.
-  async function loadEpgForActivePlaylist(){
-    epgByTvgId = {};
+  // Loads the EPG for the active playlist, if it has a source configured
+  // (URL or previously uploaded file) AND the playlist's own EPG switch is
+  // turned on. URL sources use the shared URL-keyed cache (memory +
+  // IndexedDB); file sources use a per-playlist cache (memory + IndexedDB)
+  // populated when the file was originally dropped/selected. Either way,
+  // switching playlists, or closing and reopening the app, doesn't require
+  // re-fetching/re-uploading while the cached data is still within the
+  // configured refresh window.
+  async function loadEpgForActivePlaylist(forceRefresh){
     const id = state.activePlaylistId;
     const meta = id ? state.epgMeta[id] : null;
-    if (!meta || !meta.enabled || meta.sourceType !== 'url') { renderChannelList(); return; }
+    if (!meta || !meta.enabled || (meta.sourceType !== 'url' && meta.sourceType !== 'file')){ epgByTvgId = {}; renderChannelList(); return; }
+
+    if (meta.sourceType === 'file'){
+      // Files can't be re-fetched automatically (they're not a server) -
+      // just serve from cache if still fresh, otherwise leave the EPG
+      // empty until the user drops the file in again.
+      const fresh = await getFreshEpgFileCacheEntry(id);
+      if (state.activePlaylistId !== id) return;
+      epgByTvgId = fresh ? fresh.data : {};
+      renderChannelList();
+      if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
+      return;
+    }
+
+    // Serve from cache if fresh (checks memory, then IndexedDB) - no
+    // network call, no loading status, works right after an app restart too.
+    if (!forceRefresh){
+      const fresh = await getFreshEpgCacheEntryAsync(meta.sourceUrl);
+      // Guard: the user may have switched playlists again while this
+      // (IndexedDB) lookup was in flight.
+      if (state.activePlaylistId !== id) return;
+      if (fresh){
+        epgByTvgId = fresh.data;
+        renderChannelList();
+        if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
+        return;
+      }
+    }
     try{
       showStatus(statusMsg, t('loadingEpg'), 'info');
-      epgByTvgId = await fetchEpgUrl(meta.sourceUrl);
+      epgByTvgId = await loadEpgForUrl(meta.sourceUrl, forceRefresh);
+      // Guard against the user having switched to a different playlist
+      // while this (possibly slow) fetch was in flight.
+      if (state.activePlaylistId !== id) return;
       renderChannelList();
       if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
     }catch(err){
@@ -3119,8 +3318,53 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     }
   }
 
-  // Rounds milliseconds to whole minutes.
-  function formatMin(ms){ return Math.max(0, Math.round(ms / 60000)); }
+  // ============================================================
+  // File-based EPG cache: keyed by playlist id (unlike the URL cache
+  // above) since an uploaded file has no URL to key on and is tied to
+  // one specific playlist. Same storage mechanism and TTL semantics
+  // as the URL cache: parsed data + fetchedAt timestamp in IndexedDB,
+  // valid until `epgRefreshHours` elapses. Once it expires there's no
+  // way to auto-refetch (it's a local file, not a server) - the user
+  // simply needs to drop the file in again at that point.
+  // { playlistId: { data: {tvgId: [...]}, fetchedAt: number(ms) } }
+  // ============================================================
+  const epgFileCache = {};
+  const EPG_FILE_CACHE_IDB_PREFIX = 'epgFileCache:';
+
+  // Persists a parsed file-based EPG for a playlist to IndexedDB.
+  async function persistEpgFileCacheEntry(playlistId, entry){
+    try{
+      await idbSet(EPG_FILE_CACHE_IDB_PREFIX + playlistId, { data: serializeEpgData(entry.data), fetchedAt: entry.fetchedAt });
+    }catch(e){ console.warn('EPG-Datei-Cache konnte nicht gespeichert werden', e); }
+  }
+
+  // Returns fresh file-based cached EPG data for a playlist, checking
+  // memory first, then IndexedDB (so it survives closing/reopening the
+  // app), or null if missing/expired.
+  async function getFreshEpgFileCacheEntry(playlistId){
+    let entry = epgFileCache[playlistId];
+    if (!entry){
+      try{
+        const stored = await idbGet(EPG_FILE_CACHE_IDB_PREFIX + playlistId);
+        if (stored){
+          entry = { data: deserializeEpgData(stored.data), fetchedAt: stored.fetchedAt };
+          epgFileCache[playlistId] = entry;
+        }
+      }catch(e){ /* ignore, treat as no cache */ }
+    }
+    if (!entry || !entry.data) return null;
+    if (Date.now() - entry.fetchedAt > epgTtlMs()) return null;
+    return entry;
+  }
+
+  // Removes a playlist's cached file-based EPG, both in memory and in
+  // IndexedDB (e.g. when the playlist itself is deleted).
+  async function clearEpgFileCacheEntry(playlistId){
+    delete epgFileCache[playlistId];
+    try{ await idbDel(EPG_FILE_CACHE_IDB_PREFIX + playlistId); }catch(e){ /* ignore */ }
+  }
+
+
 
   // Updates the HUD and footer display with the current and next program.
   // During catchup/archive playback (activeCatchup set), shows the archived
