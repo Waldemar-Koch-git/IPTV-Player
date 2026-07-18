@@ -1213,6 +1213,8 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       loadingEpg: 'Lade EPG…',
       epgLoadedCount: (n) => 'EPG geladen: ' + n + ' Sender mit Programmdaten.',
       epgLoadFailed: (msg) => 'EPG konnte nicht geladen werden (' + msg + '). Aktiviere den lokalen Proxy in den Einstellungen (empfohlen, damit die Daten auch automatisch aktuell bleiben), oder lade die Datei stattdessen manuell hoch.',
+      epgAutoRefreshFailed: (msg) => 'Automatische EPG-Aktualisierung fehlgeschlagen (' + msg + '). Die zuletzt geladenen Daten werden weiter angezeigt, bis der nächste Versuch klappt.',
+      epgDataStaleCleared: (msg) => 'EPG konnte seit längerem nicht aktualisiert werden (' + msg + '). Die veralteten Daten wurden entfernt, damit keine falschen Zeiten angezeigt werden - prüfe den lokalen Proxy bzw. die EPG-Quelle.',
       epgLoadedFileNote: (n) => 'EPG geladen: ' + n + ' Sender mit Programmdaten. Wird für die eingestellte Auffrischungsdauer gespeichert - danach bitte die Datei erneut hochladen.',
       epgFileReadFailed: (msg) => 'EPG-Datei konnte nicht gelesen werden (' + msg + ').',
       playlistActive: (name, n) => '„' + name + '" aktiv: ' + n + ' Sender.',
@@ -1387,6 +1389,8 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       loadingEpg: 'Loading EPG…',
       epgLoadedCount: (n) => 'EPG loaded: ' + n + ' channels with program data.',
       epgLoadFailed: (msg) => 'EPG could not be loaded (' + msg + '). Enable the local proxy in settings (recommended so data also stays automatically up to date), or upload the file manually instead.',
+      epgAutoRefreshFailed: (msg) => 'Automatic EPG refresh failed (' + msg + '). Still showing the last successfully loaded data until the next attempt succeeds.',
+      epgDataStaleCleared: (msg) => 'EPG could not be refreshed for a while (' + msg + '). The outdated data was cleared to avoid showing incorrect times - check the local proxy or the EPG source.',
       epgLoadedFileNote: (n) => 'EPG loaded: ' + n + ' channels with program data. Kept for the configured refresh duration - after that, please re-upload the file.',
       epgFileReadFailed: (msg) => 'EPG file could not be read (' + msg + ').',
       playlistActive: (name, n) => '"' + name + '" active: ' + n + ' channels.',
@@ -2357,7 +2361,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
         delete state.overrides[p.id];
         delete state.favorites[p.id];
         delete state.epgMeta[p.id];
-        clearEpgFileCacheEntry(p.id);
+        epgFileStore.clear(p.id);
         epgExpandedPlaylists.delete(p.id);
         persistEpgExpanded();
         if (state.activePlaylistId === p.id){
@@ -2430,7 +2434,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
           // keyed by playlist id since there's no source URL here.
           const entry = { data: parsed, fetchedAt: Date.now() };
           epgFileCache[id] = entry;
-          persistEpgFileCacheEntry(id, entry);
+          epgFileStore.persist(id, entry);
           if (id === state.activePlaylistId){
             epgByTvgId = parsed;
             renderChannelList();
@@ -2477,12 +2481,9 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
         if (meta && meta.sourceType === 'url' && meta.sourceUrl){
           const stillUsedElsewhere = Object.entries(state.epgMeta)
             .some(([pid, m]) => pid !== id && m && m.sourceType === 'url' && m.sourceUrl === meta.sourceUrl);
-          if (!stillUsedElsewhere){
-            delete epgCache[meta.sourceUrl];
-            try{ await idbDel(EPG_CACHE_IDB_PREFIX + meta.sourceUrl); }catch(err){ /* ignore */ }
-          }
+          if (!stillUsedElsewhere) await epgUrlStore.clear(meta.sourceUrl);
         } else if (meta && meta.sourceType === 'file'){
-          await clearEpgFileCacheEntry(id);
+          await epgFileStore.clear(id);
         }
         delete state.epgMeta[id];
         persistConfig();
@@ -3165,14 +3166,18 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
   // comfortably in localStorage's ~5-10MB per-origin budget.
   // { url: { data: {tvgId: [...]}, fetchedAt: number(ms), inFlight: Promise|null } }
   // ============================================================
-  const epgCache = {};
-  const EPG_CACHE_IDB_PREFIX = 'epgCache:';
-  let epgCacheLoadedFromIdb = false;
-
   function epgTtlMs(){
     const hours = Math.max(1, parseInt(state.settings.epgRefreshHours, 10) || 4);
     return hours * 3600000;
   }
+
+  // If an automatic refresh keeps failing (proxy down, network issue, CORS,
+  // ...), the cached EPG data just sits there getting older and older -
+  // eventually every program in it is in the past, and the guide silently
+  // turns into a "catchup only" view with no indication that anything is
+  // wrong. Once cached data is this many times older than the configured
+  // TTL, we give up on it and clear it instead of continuing to show it.
+  const EPG_STALE_CLEAR_MULTIPLIER = 3;
 
   // Serializes Date objects to ISO strings for storage.
   function serializeEpgData(data){
@@ -3187,49 +3192,47 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     return out;
   }
 
-  // Persists a single EPG cache entry to IndexedDB, keyed by its source URL.
-  async function persistEpgCacheEntry(url, entry){
-    try{
-      await idbSet(EPG_CACHE_IDB_PREFIX + url, { data: serializeEpgData(entry.data), fetchedAt: entry.fetchedAt });
-    }catch(e){ console.warn('EPG-Cache konnte nicht gespeichert werden', e); }
-  }
-
-  // On startup, loads any previously cached EPG entries needed right now
-  // (the sources actually configured+enabled across all playlists) from
-  // IndexedDB, so a fresh app start doesn't force a re-download of data
-  // that's still within the refresh window. Loaded lazily/on-demand
-  // instead of eagerly for every stored URL, to keep startup fast.
-  async function loadEpgCacheEntryFromIdb(url){
-    try{
-      const stored = await idbGet(EPG_CACHE_IDB_PREFIX + url);
-      if (!stored) return null;
-      const entry = { data: deserializeEpgData(stored.data), fetchedAt: stored.fetchedAt, inFlight: null };
-      epgCache[url] = entry;
-      return entry;
-    }catch(e){ return null; }
-  }
-
-  // Returns cached EPG data for a URL, or null if missing/expired.
-  // Checks the in-memory cache first, then (once per URL per session)
-  // falls back to IndexedDB so data survives closing/reopening the app.
-  async function getFreshEpgCacheEntryAsync(url){
-    let entry = epgCache[url];
-    if (!entry){
-      entry = await loadEpgCacheEntryFromIdb(url);
+  // Generic memory+IndexedDB backed store for parsed EPG data, keyed by
+  // whatever string the caller wants (source URL, or playlist id for
+  // file-based sources). Both EPG caches below need identical persist/
+  // read-if-fresh/clear behavior and only differ in their key and IndexedDB
+  // prefix, so that logic lives here once instead of twice.
+  function createEpgStore(idbPrefix){
+    const mem = {};
+    async function persist(key, entry){
+      try{
+        await idbSet(idbPrefix + key, { data: serializeEpgData(entry.data), fetchedAt: entry.fetchedAt });
+      }catch(e){ console.warn('Failed to persist EPG cache entry', e); }
     }
-    if (!entry || !entry.data) return null;
-    if (Date.now() - entry.fetchedAt > epgTtlMs()) return null;
-    return entry;
+    // Returns fresh cached data for `key` (checking memory first, then
+    // IndexedDB so it survives closing/reopening the app), or null if
+    // missing/expired.
+    async function getFresh(key){
+      let entry = mem[key];
+      if (!entry){
+        try{
+          const stored = await idbGet(idbPrefix + key);
+          if (stored){
+            entry = { data: deserializeEpgData(stored.data), fetchedAt: stored.fetchedAt };
+            mem[key] = entry;
+          }
+        }catch(e){ /* ignore, treat as no cache */ }
+      }
+      if (!entry || !entry.data) return null;
+      if (Date.now() - entry.fetchedAt > epgTtlMs()) return null;
+      return entry;
+    }
+    async function clear(key){
+      delete mem[key];
+      try{ await idbDel(idbPrefix + key); }catch(e){ /* ignore */ }
+    }
+    return { mem, persist, getFresh, clear };
   }
 
-  // Synchronous variant for callers that only care about the in-memory
-  // cache (e.g. after a fetch already populated it this session).
-  function getFreshEpgCacheEntry(url){
-    const entry = epgCache[url];
-    if (!entry || !entry.data) return null;
-    if (Date.now() - entry.fetchedAt > epgTtlMs()) return null;
-    return entry;
-  }
+  const epgUrlStore = createEpgStore('epgCache:');
+  // Kept as a direct alias: call sites below read/write entries on this
+  // object directly (e.g. to track in-flight fetches for de-duplication).
+  const epgCache = epgUrlStore.mem;
 
   // Loads EPG data for a source URL, using the cache (memory, then
   // IndexedDB) when still fresh. Concurrent requests for the same URL
@@ -3239,14 +3242,14 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
   // (manual "Load" button / auto-refresh timer once the TTL elapsed).
   async function loadEpgForUrl(url, forceRefresh){
     if (!forceRefresh){
-      const fresh = await getFreshEpgCacheEntryAsync(url);
+      const fresh = await epgUrlStore.getFresh(url);
       if (fresh) return fresh.data;
       if (epgCache[url] && epgCache[url].inFlight) return epgCache[url].inFlight;
     }
     const promise = fetchEpgUrl(url).then(data => {
       const entry = { data, fetchedAt: Date.now(), inFlight: null };
       epgCache[url] = entry;
-      persistEpgCacheEntry(url, entry);
+      epgUrlStore.persist(url, entry);
       return data;
     }).catch(err => {
       if (epgCache[url]) epgCache[url].inFlight = null;
@@ -3292,7 +3295,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       // Files can't be re-fetched automatically (they're not a server) -
       // just serve from cache if still fresh, otherwise leave the EPG
       // empty until the user drops the file in again.
-      const fresh = await getFreshEpgFileCacheEntry(id);
+      const fresh = await epgFileStore.getFresh(id);
       if (state.activePlaylistId !== id) return;
       epgByTvgId = fresh ? fresh.data : {};
       renderChannelList();
@@ -3303,7 +3306,7 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     // Serve from cache if fresh (checks memory, then IndexedDB) - no
     // network call, no loading status, works right after an app restart too.
     if (!forceRefresh){
-      const fresh = await getFreshEpgCacheEntryAsync(meta.sourceUrl);
+      const fresh = await epgUrlStore.getFresh(meta.sourceUrl);
       // Guard: the user may have switched playlists again while this
       // (IndexedDB) lookup was in flight.
       if (state.activePlaylistId !== id) return;
@@ -3323,55 +3326,37 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       renderChannelList();
       if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
     }catch(err){
-      console.warn('EPG laden fehlgeschlagen', err);
+      console.warn('Failed to load EPG', err);
+      if (state.activePlaylistId !== id) return;
+      // A failed refresh must never be silent: without this, epgByTvgId
+      // simply keeps whatever was last successfully fetched, which grows
+      // more stale with every failed attempt - eventually the guide shows
+      // only past/catchup programs with no hint that refreshing is broken.
+      const staleEntry = epgCache[meta.sourceUrl];
+      const isTooStale = staleEntry
+        && (Date.now() - staleEntry.fetchedAt > epgTtlMs() * EPG_STALE_CLEAR_MULTIPLIER);
+      if (isTooStale){
+        // Several refresh cycles in a row have failed and the cached data
+        // is far too old to be trustworthy - better to show "no data" than
+        // to keep silently displaying programs that are all in the past.
+        epgUrlStore.clear(meta.sourceUrl);
+        epgByTvgId = {};
+        renderChannelList();
+        if (activeIndex >= 0) updateHudEpg(channels[activeIndex]);
+        showStatus(statusMsg, t('epgDataStaleCleared', err.message), 'error');
+      } else {
+        showStatus(statusMsg, t('epgAutoRefreshFailed', err.message), 'error');
+      }
     }
   }
 
-  // ============================================================
   // File-based EPG cache: keyed by playlist id (unlike the URL cache
-  // above) since an uploaded file has no URL to key on and is tied to
-  // one specific playlist. Same storage mechanism and TTL semantics
-  // as the URL cache: parsed data + fetchedAt timestamp in IndexedDB,
-  // valid until `epgRefreshHours` elapses. Once it expires there's no
-  // way to auto-refetch (it's a local file, not a server) - the user
-  // simply needs to drop the file in again at that point.
-  // { playlistId: { data: {tvgId: [...]}, fetchedAt: number(ms) } }
-  // ============================================================
-  const epgFileCache = {};
-  const EPG_FILE_CACHE_IDB_PREFIX = 'epgFileCache:';
-
-  // Persists a parsed file-based EPG for a playlist to IndexedDB.
-  async function persistEpgFileCacheEntry(playlistId, entry){
-    try{
-      await idbSet(EPG_FILE_CACHE_IDB_PREFIX + playlistId, { data: serializeEpgData(entry.data), fetchedAt: entry.fetchedAt });
-    }catch(e){ console.warn('EPG-Datei-Cache konnte nicht gespeichert werden', e); }
-  }
-
-  // Returns fresh file-based cached EPG data for a playlist, checking
-  // memory first, then IndexedDB (so it survives closing/reopening the
-  // app), or null if missing/expired.
-  async function getFreshEpgFileCacheEntry(playlistId){
-    let entry = epgFileCache[playlistId];
-    if (!entry){
-      try{
-        const stored = await idbGet(EPG_FILE_CACHE_IDB_PREFIX + playlistId);
-        if (stored){
-          entry = { data: deserializeEpgData(stored.data), fetchedAt: stored.fetchedAt };
-          epgFileCache[playlistId] = entry;
-        }
-      }catch(e){ /* ignore, treat as no cache */ }
-    }
-    if (!entry || !entry.data) return null;
-    if (Date.now() - entry.fetchedAt > epgTtlMs()) return null;
-    return entry;
-  }
-
-  // Removes a playlist's cached file-based EPG, both in memory and in
-  // IndexedDB (e.g. when the playlist itself is deleted).
-  async function clearEpgFileCacheEntry(playlistId){
-    delete epgFileCache[playlistId];
-    try{ await idbDel(EPG_FILE_CACHE_IDB_PREFIX + playlistId); }catch(e){ /* ignore */ }
-  }
+  // above) since an uploaded file has no URL to key on and is tied to one
+  // specific playlist. Same store/TTL semantics as the URL cache - once
+  // expired there's no way to auto-refetch (it's a local file, not a
+  // server), the user simply needs to drop the file in again.
+  const epgFileStore = createEpgStore('epgFileCache:');
+  const epgFileCache = epgFileStore.mem;
 
   // Rounds milliseconds to whole minutes.
   function formatMin(ms){ return Math.max(0, Math.round(ms / 60000)); }
@@ -3559,6 +3544,51 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
 
   // Searches program titles across all channels with loaded program data
   // (not just the channel currently selected in the dropdown).
+  // Picks which programs to actually display in the guide, given a list
+  // already sorted ascending by start time (`getProgram` extracts the
+  // {start,stop,title} program from each item, since callers pass either
+  // raw programs or {p, channelName, channel} search-result wrappers).
+  //
+  // Naively taking the first N entries after filtering by the catchup
+  // window is wrong: if a channel airs enough programs per day, N entries
+  // can be entirely used up by days-old archive programs, pushing today's
+  // current/upcoming programs out of the list completely (the guide then
+  // looks "stuck in the past" even though live playback is showing the
+  // correct current program, since that's read from epgByTvgId directly).
+  //
+  // So we cap the *past* portion (nobody needs to scroll through weeks of
+  // finished archive entries anyway) but always keep the current/future
+  // portion intact.
+  function selectGuideEntries(list, oldestAllowed, now, maxPast, maxTotal, getProgram){
+    getProgram = getProgram || (item => item);
+    const withinWindow = list.filter(item => getProgram(item).stop > oldestAllowed);
+    const past = withinWindow.filter(item => getProgram(item).stop <= now);
+    const currentAndFuture = withinWindow.filter(item => getProgram(item).stop > now);
+    const recentPast = past.slice(Math.max(0, past.length - maxPast));
+    return recentPast.concat(currentAndFuture).slice(0, maxTotal);
+  }
+
+  // Renders a list of guide items with day separators inserted between
+  // items that fall on different days - shared by the per-channel guide
+  // and the cross-channel search results, which otherwise only differ in
+  // how they extract the program/options from each item.
+  function renderGuideItemsHtml(items, getProgram, getItemOpts){
+    let html = '';
+    let lastDay = '';
+    for (const item of items){
+      const p = getProgram(item);
+      const dayKey = p.start.toLocaleDateString(currentLocale(), { weekday:'short', day:'2-digit', month:'2-digit' });
+      if (dayKey !== lastDay){
+        html += `<div class="epg-guide-daysep">${escapeHtml(dayKey)}</div>`;
+        lastDay = dayKey;
+      }
+      html += renderEpgGuideItem(p, getItemOpts(item));
+    }
+    return html;
+  }
+
+  // Searches program titles across all channels with loaded program data
+  // (not just the channel currently selected in the dropdown).
   function renderEpgSearchResults(query){
     const q = query.trim().toLowerCase();
     const now = new Date();
@@ -3570,27 +3600,21 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
       const catchupDays = chFull ? catchupDaysFor(chFull) : 0;
       const oldestAllowed = catchupDays ? new Date(now.getTime() - catchupDays * 86400000) : now;
       for (const p of list){
-        if (p.stop <= oldestAllowed) continue; // zu alt, auch fürs Archiv nicht mehr verfügbar
+        if (p.stop <= oldestAllowed) continue; // too old, not even available for the archive
         if (p.title.toLowerCase().includes(q)) results.push({ p, channelName: ch.name, channel: chFull });
       }
     }
     results.sort((a, b) => a.p.start - b.p.start);
-    const limited = results.slice(0, 200);
+    // Per-channel windows were already applied above, so no further lower
+    // bound is needed here - just cap past matches instead of blindly
+    // taking the first N chronologically, so current/future matches can't
+    // get crowded out by older archive matches.
+    const limited = selectGuideEntries(results, new Date(0), now, 60, 250, r => r.p);
     if (!limited.length){
       epgGuideList.innerHTML = `<div class="epg-guide-empty">${t('noProgramsFound')}</div>`;
       return;
     }
-    let html = '';
-    let lastDay = '';
-    for (const { p, channelName, channel } of limited){
-      const dayKey = p.start.toLocaleDateString(currentLocale(), { weekday:'short', day:'2-digit', month:'2-digit' });
-      if (dayKey !== lastDay){
-        html += `<div class="epg-guide-daysep">${escapeHtml(dayKey)}</div>`;
-        lastDay = dayKey;
-      }
-      html += renderEpgGuideItem(p, { channelName, channel });
-    }
-    epgGuideList.innerHTML = html;
+    epgGuideList.innerHTML = renderGuideItemsHtml(limited, r => r.p, r => ({ channelName: r.channelName, channel: r.channel }));
     wireCatchupButtons(epgGuideList);
   }
 
@@ -3610,27 +3634,17 @@ var e,t,r="function"==typeof Symbol?Symbol:{},i=r.iterator||"@@iterator",n=r.toS
     const chIdx = channels.findIndex(c => c.tvgId === tvgId);
     const ch = chIdx >= 0 ? { ...channels[chIdx], _idx: chIdx } : null;
     const now = new Date();
-    // Vergangene Sendungen werden mit angezeigt (auf das Catchup-Fenster
-    // begrenzt, falls der Sender Archiv unterstützt), damit man sie von dort
-    // aus per Archiv-Button abspielen kann.
+    // Past programs are included too (bounded by the catchup window, if
+    // the channel supports an archive), so they can still be played back
+    // from here via the archive button.
     const catchupDays = ch ? catchupDaysFor(ch) : 0;
     const oldestAllowed = catchupDays ? new Date(now.getTime() - catchupDays * 86400000) : now;
-    const relevant = list.filter(p => p.stop > oldestAllowed).slice(0, 200);
+    const relevant = selectGuideEntries(list, oldestAllowed, now, 60, 250);
     if (!relevant.length){
       epgGuideList.innerHTML = `<div class="epg-guide-empty">${t('noUpcomingPrograms')}</div>`;
       return;
     }
-    let html = '';
-    let lastDay = '';
-    for (const p of relevant){
-      const dayKey = p.start.toLocaleDateString(currentLocale(), { weekday:'short', day:'2-digit', month:'2-digit' });
-      if (dayKey !== lastDay){
-        html += `<div class="epg-guide-daysep">${escapeHtml(dayKey)}</div>`;
-        lastDay = dayKey;
-      }
-      html += renderEpgGuideItem(p, { channel: ch });
-    }
-    epgGuideList.innerHTML = html;
+    epgGuideList.innerHTML = renderGuideItemsHtml(relevant, p => p, () => ({ channel: ch }));
     wireCatchupButtons(epgGuideList);
   }
 
